@@ -5,7 +5,7 @@ import { FaUser } from "react-icons/fa6";
 import { LogOut } from "lucide-react";
 import { CURRENT_VERSION } from "@/constants/version";
 
-export const MoreTab = () => {
+export const ProfileTab = () => {
     const { data: session } = useSession();
 
     return (

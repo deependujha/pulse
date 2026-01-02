@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { TrackerTabMap } from "@/components/tracker_tabs/tracker_map";
+import { TrackerTabMap } from "@/components/navigation_tabs/tracker_map";
 
 const tabs = Object.keys( TrackerTabMap );
 
