@@ -17,7 +17,7 @@ export const ProfileTab = () => {
                         <img
                             src={ session.user.image }
                             alt={ session.user.name ?? "User" }
-                            className="min-h-screen w-full object-cover"
+                            className="h-full w-full object-cover"
                             referrerPolicy="no-referrer"
                         />
                     ) : (
