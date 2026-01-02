@@ -9,9 +9,9 @@ export const TodayTab = () => {
     const [ mode, setMode ] = useState<TodayMode>( "workout" );
 
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="h-full flex flex-col overflow-hidden">
             {/* Mode Switch */ }
-            <div className="flex gap-2 p-4">
+            <div className="flex gap-2 p-4 shrink-0">
                 <ModeButton
                     label="Workout"
                     active={ mode === "workout" }
@@ -29,8 +29,8 @@ export const TodayTab = () => {
                 />
             </div>
 
-            {/* Content */ }
-            <div className="flex-1 p-4">
+            {/* Scrollable Content */ }
+            <div className="flex-1 overflow-y-auto px-4 pb-6">
                 { mode === "workout" && <TodayWorkout /> }
                 { mode === "nutrition" && <TodayNutrition /> }
                 { mode === "care" && <TodayCare /> }
@@ -38,6 +38,7 @@ export const TodayTab = () => {
         </div>
     );
 };
+
 
 /* ---------- UI primitives ---------- */
 
