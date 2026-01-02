@@ -1,0 +1,31 @@
+// Prisma schema for pulse
+// Personal-first, simple, extensible
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/**
+ * =========================
+ * User
+ * =========================
+ */
+
+model User {
+  id         String  @id @default(cuid())
+  email      String  @unique
+  name       String?
+  image      String? // Google profile picture
+  provider   String // "google"
+  providerId String // Google sub
+
+  createdAt   DateTime @default(now())
+  lastLoginAt DateTime @updatedAt
+
+  @@index([email])
+}
