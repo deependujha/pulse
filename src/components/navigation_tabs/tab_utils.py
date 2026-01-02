@@ -6,7 +6,7 @@ def generate_tab_file(tab_name: str) -> None:
     file_content = f"""export const {tab_name.capitalize()}Tab = () => {{
     return (
         <div>
-            <div className="flex flex-col justify-center items-center h-full">
+            <div className="flex flex-col justify-center items-center min-h-screen">
                 <h1>{tab_name} Tab</h1>
             </div>
         </div>
