@@ -2,16 +2,34 @@
 
 import { useEffect, useState } from "react";
 import { SKIN_CARE_DATA, CareMode } from "./care_data";
+import { WEEKDAYS } from "@/constants/weekdays";
+import { WeekDayScroller } from "@/components/custom-components/weekday-scroller";
 
-export const CareTab = () => {
+type Props = {
+    showScroller?: boolean;
+}
+
+export const CareTab = ( { showScroller = true }: Props ) => {
+    // -1 indicates not set yet
+    const [ selectedWeekDayIndex, setSelectedWeekDayIndex ] = useState<number>( -1 );
     const [ pmDay, setPmDay ] = useState<CareMode>( "PM_ODD" );
     const [ mode, setMode ] = useState<CareMode | null>( null );
+
+    const updateSelectedWeekDayIndex = ( index: number ) => {
+        setSelectedWeekDayIndex( index );
+        const PM_DAY = index % 2 === 0 ? "PM_EVEN" : "PM_ODD";
+        setPmDay( PM_DAY );
+        const hour = new Date().getHours();
+        if ( mode === "AM" ) return;
+        setMode( PM_DAY );
+    }
 
     useEffect( () => {
         const date = new Date();
         const dayIndex = date.getDay();
         const PM_DAY = dayIndex % 2 === 0 ? "PM_EVEN" : "PM_ODD";
         setPmDay( PM_DAY );
+        setSelectedWeekDayIndex( dayIndex );
 
         const hour = date.getHours();
         setMode( hour < 12 ? "AM" : PM_DAY );
@@ -35,7 +53,13 @@ export const CareTab = () => {
                 <p className="text-sm text-pink-500 font-semibold mb-4">
                     { mode === "AM" ? "Morning routine ☀️" : "Night routine 🌙" }
                 </p>
-
+                { showScroller ? (
+                    <WeekDayScroller
+                        selectedWeekDayIndex={ selectedWeekDayIndex }
+                        updateSelectedWeekDayIndex={ updateSelectedWeekDayIndex }
+                    />
+                ) : null
+                }
                 <div className="flex gap-2">
                     <ModeButton
                         label="AM"

@@ -1,5 +1,5 @@
 import { CareTab } from "../care/care_tab";
 
 export const TodayCare = () => {
-    return <CareTab />;
+    return <CareTab showScroller={ false } />;
 };
