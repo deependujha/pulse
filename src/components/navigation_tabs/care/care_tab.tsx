@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { SKIN_CARE_DATA, CareMode } from "./care_data";
 import { WEEKDAYS } from "@/constants/weekdays";
 import { WeekDayScroller } from "@/components/custom-components/weekday-scroller";
+import { FiSun, FiMoon } from "react-icons/fi";
 
 type Props = {
     showScroller?: boolean;
@@ -47,18 +48,25 @@ export const CareTab = ( { showScroller = true }: Props ) => {
 
     return (
         <div className="h-full flex flex-col overflow-hidden">
-            {/* Header + Toggle (fixed) */ }
-            <div className="shrink-0 px-4 py-6">
+            {/* Header + Toggle */ }
+            <div className="shrink-0 px-4 my-6">
                 <h2 className="text-lg font-semibold">Skincare</h2>
-                <p className="text-sm text-pink-500 font-semibold mb-4">
-                    { mode === "AM" ? "Morning routine ☀️" : "Night routine 🌙" }
+                <p className="text-sm text-neutral-500 font-semibold mb-4">
+                    <div className="flex items-center gap-2 text-sm text-neutral-500 font-semibold mb-4">
+                        <span>
+                            { mode === "AM" ? "Morning routine" : "Night routine" }
+                        </span>
+                        { mode === "AM" ? <FiSun size={ 16 } /> : <FiMoon size={ 16 } /> }
+                    </div>
+
                 </p>
-                { showScroller ? (
-                    <WeekDayScroller
-                        selectedWeekDayIndex={ selectedWeekDayIndex }
-                        updateSelectedWeekDayIndex={ updateSelectedWeekDayIndex }
-                    />
-                ) : null
+                { showScroller &&
+                    <div className="mb-4">
+                        <WeekDayScroller
+                            selectedWeekDayIndex={ selectedWeekDayIndex }
+                            updateSelectedWeekDayIndex={ updateSelectedWeekDayIndex }
+                        />
+                    </div>
                 }
                 <div className="flex gap-2">
                     <ModeButton

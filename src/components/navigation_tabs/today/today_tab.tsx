@@ -11,7 +11,7 @@ export const TodayTab = () => {
     return (
         <div className="h-full flex flex-col overflow-hidden">
             {/* Mode Switch */ }
-            <div className="flex gap-2 p-4 shrink-0">
+            <div className="flex gap-2 px-4 pt-6 shrink-0">
                 <ModeButton
                     label="Workout"
                     active={ mode === "workout" }
@@ -30,7 +30,7 @@ export const TodayTab = () => {
             </div>
 
             {/* Scrollable Content */ }
-            <div className="flex-1 overflow-y-auto px-4 pb-6">
+            <div className="flex-1 overflow-y-auto">
                 { mode === "workout" && <TodayWorkout /> }
                 { mode === "nutrition" && <TodayNutrition /> }
                 { mode === "care" && <TodayCare /> }

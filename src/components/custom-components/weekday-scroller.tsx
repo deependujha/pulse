@@ -27,7 +27,7 @@ export const WeekDayScroller = ( {
 
     return (
         <div ref={ containerRef } className="overflow-x-auto no-scrollbar">
-            <div className="flex gap-2 px-1 pb-4 min-w-max">
+            <div className="flex gap-2 px-1 min-w-max">
                 { WEEKDAYS.map( ( day, index ) => {
                     const isActive = index === selectedWeekDayIndex;
 
