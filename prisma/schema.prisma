@@ -1,5 +1,9 @@
 // Prisma schema for pulse
-// Personal-first, simple, extensible
+// Personal-first, customizable, extensible.
+//
+// Dates are stored as plain "YYYY-MM-DD" strings on purpose: this is a
+// single-user-per-account app used from one phone, and string dates remove
+// every timezone edge case around "which day was that?".
 
 generator client {
   provider = "prisma-client"
@@ -24,8 +28,266 @@ model User {
   provider   String // "google"
   providerId String // Google sub
 
+  // Goals / preferences
+  calorieTarget Int     @default(2000)
+  proteinTarget Int     @default(120)
+  heightCm      Float?
+  goalWeightKg  Float?
+  seeded        Boolean @default(false)
+
   createdAt   DateTime @default(now())
   lastLoginAt DateTime @updatedAt
 
+  exercises    Exercise[]
+  routines     Routine[]
+  schedule     ScheduleSlot[]
+  setLogs      SetLog[]
+  foods        Food[]
+  meals        MealEntry[]
+  careSteps    CareStep[]
+  careLogs     CareLog[]
+  dailyMetrics DailyMetric[]
+
   @@index([email])
+}
+
+/**
+ * =========================
+ * Workout
+ * =========================
+ */
+
+/// A movement in the user's personal library.
+model Exercise {
+  id     String @id @default(cuid())
+  userId String
+
+  name        String
+  muscleGroup String  @default("Other") // Chest, Back, Legs, Shoulders, Arms, Core, Cardio, Mobility, Other
+  youtubeUrl  String? // demo video
+  imageUrl    String? // still image or gif
+  gifUrl      String? // optional animated demo
+  notes       String?
+
+  defaultSets Int    @default(3)
+  defaultReps String @default("8-12")
+
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routineItems RoutineItem[]
+  setLogs      SetLog[]
+
+  @@unique([userId, name])
+  @@index([userId, archived])
+}
+
+/// A reusable workout template, e.g. "Back + Posture".
+model Routine {
+  id     String @id @default(cuid())
+  userId String
+
+  name  String
+  focus String? // short subtitle, e.g. "Back + Posture"
+  color String  @default("#6366f1")
+  emoji String  @default("🏋️")
+  notes String?
+
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items RoutineItem[]
+  slots ScheduleSlot[]
+  logs  SetLog[]
+
+  @@index([userId, archived])
+}
+
+model RoutineItem {
+  id         String @id @default(cuid())
+  routineId  String
+  exerciseId String
+
+  position Int
+  sets     Int     @default(3)
+  reps     String  @default("8-12")
+  restSec  Int?
+  note     String?
+
+  routine  Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@index([routineId, position])
+}
+
+/// Which routine runs on which weekday. Missing row / null routine = rest day.
+model ScheduleSlot {
+  id      String @id @default(cuid())
+  userId  String
+  weekday Int // 0 = Sunday ... 6 = Saturday
+
+  routineId String?
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routine Routine? @relation(fields: [routineId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, weekday])
+}
+
+/// One completed set. Rows are created as the user checks sets off.
+model SetLog {
+  id     String @id @default(cuid())
+  userId String
+  date   String // YYYY-MM-DD
+
+  routineId    String?
+  exerciseId   String?
+  exerciseName String // denormalised so history survives deletes
+
+  setIndex Int // 0-based position within that exercise, for that day
+  reps     Int?
+  weightKg Float?
+
+  createdAt DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routine  Routine?  @relation(fields: [routineId], references: [id], onDelete: SetNull)
+  exercise Exercise? @relation(fields: [exerciseId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, date, exerciseId, setIndex])
+  @@index([userId, date])
+  @@index([userId, exerciseId])
+}
+
+/**
+ * =========================
+ * Nutrition
+ * =========================
+ */
+
+/// A saved food the user can tap to log. Calories are per serving.
+model Food {
+  id     String @id @default(cuid())
+  userId String
+
+  name         String
+  emoji        String  @default("🍽️")
+  servingLabel String  @default("1 serving")
+  calories     Int
+  proteinG     Float   @default(0)
+  carbsG       Float   @default(0)
+  fatG         Float   @default(0)
+  category     String  @default("Other") // Breakfast, Lunch, Dinner, Snack, Drink, Protein, Other
+  favorite     Boolean @default(false)
+
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries MealEntry[]
+
+  @@unique([userId, name])
+  @@index([userId, archived])
+}
+
+/// Something eaten on a given day. foodId is null for one-off custom entries.
+model MealEntry {
+  id     String @id @default(cuid())
+  userId String
+  date   String // YYYY-MM-DD
+
+  foodId String?
+  name   String
+  emoji  String  @default("🍽️")
+
+  meal     String @default("snack") // breakfast | lunch | dinner | snack
+  servings Float  @default(1)
+
+  calories Int
+  proteinG Float @default(0)
+  carbsG   Float @default(0)
+  fatG     Float @default(0)
+
+  createdAt DateTime @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  food Food? @relation(fields: [foodId], references: [id], onDelete: SetNull)
+
+  @@index([userId, date])
+}
+
+/**
+ * =========================
+ * Care (skin / routine)
+ * =========================
+ */
+
+model CareStep {
+  id     String @id @default(cuid())
+  userId String
+
+  name    String
+  note    String?
+  product String?
+  phase   String  @default("AM") // AM | PM
+  emoji   String  @default("🧴")
+
+  // EVERY_DAY | ALTERNATE (odd day-of-month) | WEEKDAYS (uses `weekdays`)
+  frequency String @default("EVERY_DAY")
+  weekdays  Int[]  @default([])
+
+  position Int     @default(0)
+  archived Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs CareLog[]
+
+  @@index([userId, phase, archived])
+}
+
+model CareLog {
+  id     String @id @default(cuid())
+  userId String
+  date   String // YYYY-MM-DD
+  stepId String
+
+  createdAt DateTime @default(now())
+
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  step CareStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date, stepId])
+  @@index([userId, date])
+}
+
+/**
+ * =========================
+ * Daily body metrics
+ * =========================
+ */
+
+model DailyMetric {
+  id     String @id @default(cuid())
+  userId String
+  date   String // YYYY-MM-DD
+
+  weightKg   Float?
+  waterMl    Int     @default(0)
+  sleepHours Float?
+  note       String?
+
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date])
 }

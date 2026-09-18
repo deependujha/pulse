@@ -1,48 +1,49 @@
 import { IconType } from "react-icons";
-import { FiHome, FiActivity, FiCoffee, FiDroplet, FiUser, FiBarChart2 } from "react-icons/fi";
+import { FiActivity, FiBarChart2, FiDroplet, FiHome, FiPieChart } from "react-icons/fi";
 
 import { TodayTab } from "@/components/navigation_tabs/today/today_tab";
+import { CareTab } from "./care/care_tab";
+import { InsightsTab } from "./insights/insights_tab";
 import { NutritionTab } from "./nutrition/nutrition_tab";
 import { WorkoutTab } from "./workout/workout_tab";
-import { CareTab } from "./care/care_tab";
-import { ProfileTab } from "./profile/profile_tab";
-import { InsightsTab } from "./insights/insights_tab";
 
-type TrackerTabConfig = {
-	component: React.FC;
-	icon: IconType;
-	label: string;
+export type TabProps = {
+	date: string;
+	onDateChange: (date: string) => void;
+	/** Lets the Today summary jump straight to the tab that owns a thing. */
+	onNavigate: (tab: TabId) => void;
 };
 
-export const TrackerTabMap: Record<string, TrackerTabConfig> = {
-	today: {
-		component: TodayTab,
-		icon: FiHome,
-		label: "Today",
-	},
+type TrackerTabConfig = {
+	component: React.FC<TabProps>;
+	icon: IconType;
+	label: string;
+	/** Drives the tab's accent colour token. */
+	accent: string;
+};
+
+/** The five bottom-bar destinations. Profile hangs off the header avatar. */
+export const TrackerTabMap = {
+	today: { component: TodayTab, icon: FiHome, label: "Today", accent: "var(--foreground)" },
 	workout: {
 		component: WorkoutTab,
-		icon: FiActivity, // movement, exercise, effort
+		icon: FiActivity,
 		label: "Workout",
+		accent: "var(--accent-workout)",
 	},
 	nutrition: {
 		component: NutritionTab,
-		icon: FiCoffee, // intake / consumption (best available in Fi)
-		label: "Nutrition",
+		icon: FiPieChart,
+		label: "Food",
+		accent: "var(--accent-food)",
 	},
-	care: {
-		component: CareTab,
-		icon: FiDroplet, // skincare / care / liquids
-		label: "Care",
-	},
+	care: { component: CareTab, icon: FiDroplet, label: "Care", accent: "var(--accent-care)" },
 	insight: {
 		component: InsightsTab,
-		icon: FiBarChart2, // skincare / care / liquids
+		icon: FiBarChart2,
 		label: "Insights",
+		accent: "var(--accent-insight)",
 	},
-	profile: {
-		component: ProfileTab,
-		icon: FiUser, // identity, settings-adjacent
-		label: "Profile",
-	},
-};
+} satisfies Record<string, TrackerTabConfig>;
+
+export type TabId = keyof typeof TrackerTabMap;

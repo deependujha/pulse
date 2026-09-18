@@ -1,51 +1,122 @@
 "use client";
 
-import React, { useState } from "react";
-import { TrackerTabMap } from "@/components/navigation_tabs/tracker_map";
+import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { FiUser } from "react-icons/fi";
+import { ProfileTab } from "@/components/navigation_tabs/profile/profile_tab";
+import { TrackerTabMap, type TabId } from "@/components/navigation_tabs/tracker_map";
+import { formatRelative, todayKey } from "@/lib/dates";
+import { cn } from "@/lib/utils";
 
-const tabs = Object.keys( TrackerTabMap );
+const TAB_IDS = Object.keys(TrackerTabMap) as TabId[];
 
 export const TrackerPage = () => {
-    const [ activeTab, setActiveTab ] = useState( tabs[ 0 ] );
+	const { data: session } = useSession();
+	const [activeTab, setActiveTab] = useState<TabId>("today");
+	const [showProfile, setShowProfile] = useState(false);
 
-    const ActiveComponent = TrackerTabMap[ activeTab ].component;
+	// One selected day for the whole app: switch to yesterday in Food and Care
+	// stays on yesterday too.
+	const [date, setDate] = useState(todayKey());
 
-    return (
-        <div className="flex flex-col h-screen bg-background text-foreground">
-            {/* Content */ }
-            <main className="flex-1 overflow-auto">
-                <ActiveComponent />
-            </main>
+	const { component: ActiveComponent, label } = TrackerTabMap[activeTab];
+	const isToday = date === todayKey();
 
-            {/* Bottom Bar */ }
-            <nav className="h-14 border-t border-neutral-200 flex justify-around items-center mb-2">
-                { tabs.map( ( tab ) => {
-                    const { icon: Icon, label } = TrackerTabMap[ tab ];
-                    const isActive = activeTab === tab;
+	return (
+		<div className="flex h-[100dvh] flex-col bg-background text-foreground">
+			<header className="glass safe-top sticky top-0 z-30 border-b border-border">
+				<div className="mx-auto flex h-14 w-full max-w-lg items-center gap-3 px-4">
+					<img src="/logo.svg" alt="" className="size-7" aria-hidden="true" />
+					<div className="min-w-0 flex-1">
+						<div className="truncate text-sm font-semibold">
+							{showProfile ? "Profile" : label}
+						</div>
+						{!showProfile && (
+							<div
+								className={cn(
+									"truncate text-xs",
+									isToday ? "text-muted-foreground" : "font-medium text-[var(--warning)]",
+								)}
+							>
+								{formatRelative(date)}
+							</div>
+						)}
+					</div>
 
-                    return (
-                        <button
-                            key={ tab }
-                            onClick={ () => setActiveTab( tab ) }
-                            className="flex flex-col items-center justify-center gap-0.5 text-xs cursor-pointer"
-                        >
-                            <Icon
-                                size={ 20 }
-                                className={ isActive ? "text-black" : "text-neutral-400" }
-                            />
-                            <span
-                                className={
-                                    isActive
-                                        ? "text-black font-medium"
-                                        : "text-neutral-400"
-                                }
-                            >
-                                { label }
-                            </span>
-                        </button>
-                    );
-                } ) }
-            </nav>
-        </div>
-    );
+					<button
+						type="button"
+						onClick={() => setShowProfile((v) => !v)}
+						aria-label={showProfile ? "Close profile" : "Open profile"}
+						className={cn(
+							"size-9 shrink-0 overflow-hidden rounded-full border transition active:scale-95",
+							showProfile ? "border-foreground" : "border-border",
+						)}
+					>
+						{session?.user?.image ? (
+							<img
+								src={session.user.image}
+								alt=""
+								className="size-full object-cover"
+								referrerPolicy="no-referrer"
+							/>
+						) : (
+							<span className="grid size-full place-items-center bg-secondary">
+								<FiUser size={16} />
+							</span>
+						)}
+					</button>
+				</div>
+			</header>
+
+			<main className="scroll-y flex-1">
+				<div className="mx-auto w-full max-w-lg px-4 pt-4 pb-6">
+					{showProfile ? (
+						<ProfileTab />
+					) : (
+						<ActiveComponent date={date} onDateChange={setDate} onNavigate={setActiveTab} />
+					)}
+				</div>
+			</main>
+
+			<nav
+				aria-label="Sections"
+				className="glass safe-bottom sticky bottom-0 z-30 border-t border-border"
+			>
+				<div className="mx-auto flex w-full max-w-lg items-stretch justify-around px-2 pt-1.5 pb-1.5">
+					{TAB_IDS.map((tab) => {
+						const { icon: Icon, label: tabLabel, accent } = TrackerTabMap[tab];
+						const isActive = !showProfile && activeTab === tab;
+
+						return (
+							<button
+								key={tab}
+								type="button"
+								aria-current={isActive ? "page" : undefined}
+								onClick={() => {
+									setShowProfile(false);
+									setActiveTab(tab);
+								}}
+								className="flex min-h-12 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 transition active:scale-95"
+							>
+								<Icon
+									size={20}
+									style={{ color: isActive ? accent : undefined }}
+									className={isActive ? undefined : "text-muted-foreground"}
+								/>
+								<span
+									style={{ color: isActive ? accent : undefined }}
+									className={cn(
+										"text-[10px]",
+										isActive ? "font-semibold" : "text-muted-foreground",
+									)}
+								>
+									{tabLabel}
+								</span>
+							</button>
+						);
+					})}
+				</div>
+			</nav>
+		</div>
+	);
 };

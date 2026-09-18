@@ -3,11 +3,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Full-height, light-only baseline */
 html,
 body {
   height: 100%;
-  background: #ffffff;
 }
 
 /* Single source of truth */
@@ -30,6 +28,17 @@ body {
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
+  --color-viz-1: var(--viz-1);
+  --color-viz-2: var(--viz-2);
+  --color-viz-3: var(--viz-3);
+  --color-viz-4: var(--viz-4);
+  --color-viz-5: var(--viz-5);
+  --color-viz-6: var(--viz-6);
+  --color-viz-7: var(--viz-7);
+  --color-viz-8: var(--viz-8);
+  --color-good: var(--good);
+  --color-warning: var(--warning);
+  --color-critical: var(--critical);
   --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
   --color-input: var(--input);
@@ -56,12 +65,17 @@ body {
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-/* No media queries. No negotiation. */
+/* iPhone-first baseline: no tap flash, no rubber-band, no accidental zoom. */
 body {
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  text-rendering: optimizeLegibility;
+}
 
-  /* iOS safe area support */
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+button,
+[role="button"],
+a {
+  touch-action: manipulation;
 }
 
 :root {
@@ -97,6 +111,36 @@ body {
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Data-viz slots. Validated categorical order - assign in slot order,
+     never cycled, and never repainted when a series is filtered out. */
+  --viz-1: #2a78d6; /* blue */
+  --viz-2: #eb6834; /* orange */
+  --viz-3: #1baf7a; /* aqua */
+  --viz-4: #eda100; /* yellow */
+  --viz-5: #e87ba4; /* magenta */
+  --viz-6: #008300; /* green */
+  --viz-7: #4a3aa7; /* violet */
+  --viz-8: #e34948; /* red */
+  --viz-grid: oklch(0.922 0 0);
+  --viz-axis: oklch(0.556 0 0);
+
+  /* Status - reserved, never reused as a series colour. */
+  --good: #0ca30c;
+  --warning: #fab219;
+  --critical: #d03b3b;
+
+  /* Section accents */
+  --accent-workout: #4a3aa7;
+  --accent-food: #eb6834;
+  --accent-care: #1baf7a;
+  --accent-insight: #2a78d6;
+
+  /* Ordinal blue ramp for the consistency grid. Every step clears 2:1
+     against its own surface, so a filled cell is never invisible. */
+  --heat-1: #86b6ef;
+  --heat-2: #3987e5;
+  --heat-3: #1c5cab;
 }
 
 .dark {
@@ -131,6 +175,31 @@ body {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Dark steps are selected for the dark surface, not an automatic flip. */
+  --viz-1: #3987e5;
+  --viz-2: #d95926;
+  --viz-3: #199e70;
+  --viz-4: #c98500;
+  --viz-5: #d55181;
+  --viz-6: #008300;
+  --viz-7: #9085e9;
+  --viz-8: #e66767;
+  --viz-grid: oklch(1 0 0 / 10%);
+  --viz-axis: oklch(0.708 0 0);
+
+  --good: #0ca30c;
+  --warning: #fab219;
+  --critical: #d03b3b;
+
+  --accent-workout: #9085e9;
+  --accent-food: #d95926;
+  --accent-care: #199e70;
+  --accent-insight: #3987e5;
+
+  --heat-1: #184f95;
+  --heat-2: #2a78d6;
+  --heat-3: #6da7ec;
 }
 
 @layer base {
@@ -153,4 +222,76 @@ body {
   /* IE & Edge */
   scrollbar-width: none;
   /* Firefox */
+}
+/* Sticky chrome sits over scrolling content without hiding it. */
+.glass {
+  background: color-mix(in oklab, var(--background) 82%, transparent);
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Momentum scrolling inside panes on iOS. */
+.scroll-y {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Horizontal chip rails snap so a half-cut chip never ends a scroll. */
+.snap-rail {
+  scroll-snap-type: x proximity;
+}
+
+.snap-rail > * {
+  scroll-snap-align: center;
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-sheet-in {
+  animation: sheet-in 260ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.animate-fade-in {
+  animation: fade-in 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .animate-sheet-in,
+  .animate-fade-in {
+    animation: none;
+  }
+}
+
+/* Recharts injects inline focus outlines on its SVG wrappers. */
+.recharts-wrapper:focus,
+.recharts-surface:focus {
+  outline: none;
 }

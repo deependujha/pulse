@@ -5,6 +5,9 @@ import { NextAuthOptions } from "next-auth";
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;
 
+/** The fields we actually read off Google's OIDC profile. */
+type GoogleProfile = { email?: string; name?: string; picture?: string };
+
 export const AuthOptions: NextAuthOptions = {
     session: {
         strategy: "jwt",
@@ -24,18 +27,18 @@ export const AuthOptions: NextAuthOptions = {
             }
 
             // Idempotent: safe to run every login
-            const result = await prisma.user.upsert( {
+            await prisma.user.upsert( {
                 where: {
                     email: profile.email,
                 },
                 update: {
                     name: profile.name,
-                    image: ( profile as any ).picture,
+                    image: ( profile as GoogleProfile ).picture,
                 },
                 create: {
                     email: profile.email,
                     name: profile.name,
-                    image: ( profile as any ).picture,
+                    image: ( profile as GoogleProfile ).picture,
                     provider: account.provider,          // "google"
                     providerId: account.providerAccountId // Google sub
                 },
