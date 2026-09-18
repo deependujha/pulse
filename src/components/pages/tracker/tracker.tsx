@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { FiUser } from "react-icons/fi";
 import { ProfileTab } from "@/components/navigation_tabs/profile/profile_tab";
 import { TrackerTabMap, type TabId } from "@/components/navigation_tabs/tracker_map";
-import { formatRelative, todayKey } from "@/lib/dates";
+import { formatRelative, formatShort, todayKey } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 
 const TAB_IDS = Object.keys(TrackerTabMap) as TabId[];
@@ -23,8 +23,13 @@ export const TrackerPage = () => {
 	const isToday = date === todayKey();
 
 	return (
-		<div className="flex h-[100dvh] flex-col bg-background text-foreground">
-			<header className="glass safe-top sticky top-0 z-30 border-b border-border">
+		/* `fixed inset-0` rather than `h-[100dvh]`: in an iOS home-screen app the
+		   dynamic viewport units under-report by the safe-area insets, which left
+		   the bottom bar floating short of the screen edge. A fixed box sizes to
+		   the initial containing block, which `viewport-fit=cover` makes the whole
+		   screen. It also stops the page itself from rubber-banding. */
+		<div className="fixed inset-0 flex flex-col bg-background text-foreground">
+			<header className="glass safe-top z-30 shrink-0 border-b border-border">
 				<div className="mx-auto flex h-14 w-full max-w-lg items-center gap-3 px-4">
 					<img src="/logo.svg" alt="" className="size-7" aria-hidden="true" />
 					<div className="min-w-0 flex-1">
@@ -38,7 +43,7 @@ export const TrackerPage = () => {
 									isToday ? "text-muted-foreground" : "font-medium text-[var(--warning)]",
 								)}
 							>
-								{formatRelative(date)}
+								{isToday ? formatShort(date) : formatRelative(date)}
 							</div>
 						)}
 					</div>
@@ -80,7 +85,7 @@ export const TrackerPage = () => {
 
 			<nav
 				aria-label="Sections"
-				className="glass safe-bottom sticky bottom-0 z-30 border-t border-border"
+				className="glass safe-bottom z-30 shrink-0 border-t border-border"
 			>
 				<div className="mx-auto flex w-full max-w-lg items-stretch justify-around px-2 pt-1.5 pb-1.5">
 					{TAB_IDS.map((tab) => {
