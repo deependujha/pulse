@@ -5,44 +5,17 @@ import { badRequest, notFound, num, readJson, str, withUser } from "@/server/htt
 
 const MEALS = ["breakfast", "lunch", "snack", "dinner"];
 
-/** How many distinct library items the "recent" strip offers. */
-const RECENT_COUNT = 8;
-
-/** How far back to look for those distinct items. */
-const RECENT_SCAN = 120;
-
 export const GET = withUser(async (user, req) => {
 	const url = new URL(req.url);
 	const date = url.searchParams.get("date") ?? todayKey();
 	if (!isValidDayKey(date)) return badRequest("date must be YYYY-MM-DD");
 
-	const [entries, recent] = await Promise.all([
-		prisma.mealEntry.findMany({
-			where: { userId: user.id, date },
-			orderBy: { createdAt: "asc" },
-		}),
-		// Only the ids: the client already holds the library from /api/bootstrap,
-		// so resolving them there keeps this cheap and drops archived items for free.
-		//
-		// Deduplication happens here rather than via Prisma's `distinct`, because
-		// `distinct` combined with `take` can apply the limit before collapsing
-		// duplicates — log the same thing eight times and the strip would show one
-		// item. Scanning a fixed window and deduping is predictable instead.
-		prisma.mealEntry.findMany({
-			where: { userId: user.id, itemId: { not: null } },
-			orderBy: { createdAt: "desc" },
-			select: { itemId: true },
-			take: RECENT_SCAN,
-		}),
-	]);
+	const entries = await prisma.mealEntry.findMany({
+		where: { userId: user.id, date },
+		orderBy: { createdAt: "asc" },
+	});
 
-	const seen = new Set<string>();
-	for (const row of recent) {
-		if (row.itemId) seen.add(row.itemId);
-		if (seen.size >= RECENT_COUNT) break;
-	}
-
-	return NextResponse.json({ date, entries, recentItemIds: [...seen] });
+	return NextResponse.json({ date, entries });
 });
 
 /**

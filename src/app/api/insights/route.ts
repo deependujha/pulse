@@ -37,6 +37,8 @@ export const GET = withUser(async (user, req) => {
 			select: {
 				calorieTarget: true,
 				proteinTarget: true,
+				carbsTargetG: true,
+				fatTargetG: true,
 				waterTargetMl: true,
 				sleepTargetHours: true,
 				heightCm: true,
@@ -170,6 +172,8 @@ export const GET = withUser(async (user, req) => {
 		days,
 		calorieTarget,
 		proteinTarget,
+		carbsTargetG: profile?.carbsTargetG ?? 220,
+		fatTargetG: profile?.fatTargetG ?? 60,
 		waterTargetMl: profile?.waterTargetMl ?? 2500,
 		sleepTargetHours: profile?.sleepTargetHours ?? 8,
 		heightCm: profile?.heightCm ?? null,

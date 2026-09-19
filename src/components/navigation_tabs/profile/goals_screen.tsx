@@ -23,6 +23,8 @@ const GoalsForm = ({ open, onClose, profile }: Props) => {
 	const [form, setForm] = useState({
 		calorieTarget: String(profile.calorieTarget),
 		proteinTarget: String(profile.proteinTarget),
+		carbsTargetG: String(profile.carbsTargetG),
+		fatTargetG: String(profile.fatTargetG),
 		waterTargetMl: String(profile.waterTargetMl),
 		sleepTargetHours: String(profile.sleepTargetHours),
 		heightCm: profile.heightCm ? String(profile.heightCm) : "",
@@ -34,6 +36,15 @@ const GoalsForm = ({ open, onClose, profile }: Props) => {
 	const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
 		setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
+	// The three macros should roughly account for the calorie target; a split
+	// that doesn't add up makes every bar on the Macros tab quietly misleading.
+	const macroKcal =
+		(Number(form.proteinTarget) || 0) * 4 +
+		(Number(form.carbsTargetG) || 0) * 4 +
+		(Number(form.fatTargetG) || 0) * 9;
+	const calories = Number(form.calorieTarget) || 0;
+	const splitOff = calories > 0 && Math.abs(macroKcal - calories) > calories * 0.1;
+
 	const current = Number(form.currentWeightKg);
 	const goal = Number(form.goalWeightKg);
 	const weightGap = current > 0 && goal > 0 ? Math.round((current - goal) * 10) / 10 : null;
@@ -44,6 +55,8 @@ const GoalsForm = ({ open, onClose, profile }: Props) => {
 				api.patch("/api/profile", {
 					calorieTarget: Number(form.calorieTarget) || 2000,
 					proteinTarget: Number(form.proteinTarget) || 0,
+					carbsTargetG: Number(form.carbsTargetG) || 0,
+					fatTargetG: Number(form.fatTargetG) || 0,
 					waterTargetMl: Number(form.waterTargetMl) || 0,
 					sleepTargetHours: Number(form.sleepTargetHours) || 0,
 					heightCm: form.heightCm.trim(),
@@ -97,6 +110,24 @@ const GoalsForm = ({ open, onClose, profile }: Props) => {
 								placeholder="120"
 							/>
 						</Labelled>
+						<Labelled label="Carbs (g)">
+							<TextInput
+								type="number"
+								inputMode="numeric"
+								value={form.carbsTargetG}
+								onChange={set("carbsTargetG")}
+								placeholder="220"
+							/>
+						</Labelled>
+						<Labelled label="Fat (g)">
+							<TextInput
+								type="number"
+								inputMode="numeric"
+								value={form.fatTargetG}
+								onChange={set("fatTargetG")}
+								placeholder="60"
+							/>
+						</Labelled>
 						<Labelled label="Water (ml)">
 							<TextInput
 								type="number"
@@ -118,6 +149,13 @@ const GoalsForm = ({ open, onClose, profile }: Props) => {
 							/>
 						</Labelled>
 					</div>
+					{splitOff && (
+						<p className="text-xs text-[var(--warning)]">
+							Those macros come to about {Math.round(macroKcal).toLocaleString()} kcal against a{" "}
+							{calories.toLocaleString()} kcal target. Still fine as a rough guide — protein 4,
+							carbs 4, fat 9 kcal per gram if you want them to line up.
+						</p>
+					)}
 				</section>
 
 				<section className="space-y-3 border-t border-border pt-5">

@@ -4,19 +4,29 @@ import { useMemo, useState } from "react";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
 import { toast } from "sonner";
 import { DateStrip } from "@/components/common/date-strip";
-import { GhostButton, SectionTitle, Spinner } from "@/components/common/bits";
+import { GhostButton, Spinner } from "@/components/common/bits";
 import { Ring } from "@/components/common/ring";
 import { ItemEditor } from "./item_editor";
 import { LogScreen } from "./log_screen";
 import { api, refreshAll, useResource } from "@/lib/api";
-import { MEAL_TYPES, type Bootstrap, type LibraryItem, type MealEntry, type MealType } from "@/lib/types";
+import { WaterCard } from "@/components/common/water_card";
+import {
+	MEAL_TYPES,
+	type Bootstrap,
+	type DailyMetric,
+	type MealEntry,
+	type MealType,
+} from "@/lib/types";
 import type { TabProps } from "@/components/navigation_tabs/tracker_map";
 
-type MealsResponse = { date: string; entries: MealEntry[]; recentItemIds: string[] };
+type MealsResponse = { date: string; entries: MealEntry[] };
+type MetricsResponse = { metric: DailyMetric };
 
 export const MacrosTab = ({ date, onDateChange }: TabProps) => {
 	const mealsKey = `/api/meals?date=${date}`;
+	const metricsKey = `/api/metrics?date=${date}`;
 	const meals = useResource<MealsResponse>(mealsKey);
+	const metrics = useResource<MetricsResponse>(metricsKey);
 	const bootstrap = useResource<Bootstrap>("/api/bootstrap");
 
 	const [logOpen, setLogOpen] = useState(false);
@@ -28,6 +38,9 @@ export const MacrosTab = ({ date, onDateChange }: TabProps) => {
 	const profile = bootstrap.data?.profile;
 	const calorieTarget = profile?.calorieTarget ?? 2000;
 	const proteinTarget = profile?.proteinTarget ?? 120;
+	const carbsTarget = profile?.carbsTargetG ?? 220;
+	const fatTarget = profile?.fatTargetG ?? 60;
+	const waterTarget = profile?.waterTargetMl ?? 2500;
 
 	const totals = useMemo(
 		() =>
@@ -43,26 +56,9 @@ export const MacrosTab = ({ date, onDateChange }: TabProps) => {
 		[entries],
 	);
 
-	// Recency comes back as ids so it always reflects the item's current numbers,
-	// and anything archived simply stops resolving.
-	const recent = useMemo(() => {
-		const byId = new Map(library.map((item) => [item.id, item]));
-		return (meals.data?.recentItemIds ?? [])
-			.map((id) => byId.get(id))
-			.filter((item): item is LibraryItem => item !== undefined);
-	}, [library, meals.data]);
 
 	const remaining = calorieTarget - totals.calories;
 
-	const quickLog = async (item: LibraryItem) => {
-		try {
-			await api.post("/api/meals", { date, itemId: item.id, meal: suggestedMeal(), servings: 1 });
-			toast.success(`${item.emoji} ${item.name} · ${item.calories} kcal`);
-			await refreshAll(mealsKey, "/api/insights");
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : "Could not log that");
-		}
-	};
 
 	const removeEntry = async (entry: MealEntry) => {
 		try {
@@ -109,14 +105,31 @@ export const MacrosTab = ({ date, onDateChange }: TabProps) => {
 								target={proteinTarget}
 								color="var(--viz-1)"
 							/>
-							<MacroBar label="Carbs" value={totals.carbsG} color="var(--viz-2)" />
-							<MacroBar label="Fat" value={totals.fatG} color="var(--viz-3)" />
+							<MacroBar
+								label="Carbs"
+								value={totals.carbsG}
+								target={carbsTarget}
+								color="var(--viz-2)"
+							/>
+							<MacroBar
+								label="Fat"
+								value={totals.fatG}
+								target={fatTarget}
+								color="var(--viz-3)"
+							/>
 						</div>
 					</section>
 
+					<WaterCard
+						date={date}
+						metricsKey={metricsKey}
+						waterMl={metrics.data?.metric.waterMl ?? 0}
+						targetMl={waterTarget}
+					/>
+
 					{/* An empty library is the only thing standing between a new account
 					    and logging anything, so it gets the whole screen's attention. */}
-					{library.length === 0 ? (
+					{library.length === 0 && (
 						<section className="space-y-3 rounded-2xl border border-dashed border-border px-4 py-8 text-center">
 							<div className="text-3xl">📖</div>
 							<h3 className="text-sm font-semibold">Start your library</h3>
@@ -133,30 +146,6 @@ export const MacrosTab = ({ date, onDateChange }: TabProps) => {
 								Add your first item
 							</GhostButton>
 						</section>
-					) : (
-						recent.length > 0 && (
-							<section>
-								<SectionTitle title="Again" caption="What you log most often — one tap" />
-								<div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-									{recent.map((item) => (
-										<button
-											key={item.id}
-											type="button"
-											onClick={() => quickLog(item)}
-											className="flex w-24 shrink-0 flex-col items-center gap-1 rounded-2xl border border-border bg-card px-2 py-3 active:scale-95"
-										>
-											<span className="text-2xl">{item.emoji}</span>
-											<span className="line-clamp-2 text-center text-[11px] leading-tight font-medium">
-												{item.name}
-											</span>
-											<span className="text-[10px] text-muted-foreground">
-												{item.calories} kcal
-											</span>
-										</button>
-									))}
-								</div>
-							</section>
-						)
 					)}
 
 					<section className="space-y-3">
@@ -218,14 +207,18 @@ export const MacrosTab = ({ date, onDateChange }: TabProps) => {
 				</>
 			)}
 
-			<LogScreen
-				open={logOpen}
-				onClose={() => setLogOpen(false)}
-				date={date}
-				library={library}
-				defaultMeal={logMeal}
-				onLogged={() => refreshAll(mealsKey, "/api/insights")}
-			/>
+			{/* Mounted per opening, so `defaultMeal` seeds the meal each time. A
+			    permanently mounted screen would keep whichever meal it first saw. */}
+			{logOpen && (
+				<LogScreen
+					open
+					onClose={() => setLogOpen(false)}
+					date={date}
+					library={library}
+					defaultMeal={logMeal}
+					onLogged={() => refreshAll(mealsKey, "/api/insights")}
+				/>
+			)}
 
 			<ItemEditor open={editorOpen} onClose={() => setEditorOpen(false)} item={null} />
 		</div>

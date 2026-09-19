@@ -26,6 +26,12 @@ export const PATCH = withUser(async (user, req) => {
 				"proteinTarget" in body
 					? clamp(Math.round(num(body.proteinTarget, user.proteinTarget)), 0, 400)
 					: undefined,
+			carbsTargetG:
+				"carbsTargetG" in body
+					? clamp(Math.round(num(body.carbsTargetG, 220)), 0, 1000)
+					: undefined,
+			fatTargetG:
+				"fatTargetG" in body ? clamp(Math.round(num(body.fatTargetG, 60)), 0, 400) : undefined,
 			waterTargetMl:
 				"waterTargetMl" in body
 					? clamp(Math.round(num(body.waterTargetMl, 2500)), 0, 10000)

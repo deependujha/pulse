@@ -11,6 +11,8 @@ export const PROFILE_SELECT = {
 	image: true,
 	calorieTarget: true,
 	proteinTarget: true,
+	carbsTargetG: true,
+	fatTargetG: true,
 	waterTargetMl: true,
 	sleepTargetHours: true,
 	heightCm: true,

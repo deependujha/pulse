@@ -28,9 +28,13 @@ model User {
   provider   String // "google"
   providerId String // Google sub
 
-  // Goals / preferences
+  // Goals / preferences. The macro targets are stored rather than derived from
+  // `calorieTarget`, because the split people actually want is personal — and a
+  // derived one would silently move every time the calorie target changed.
   calorieTarget    Int   @default(2000)
   proteinTarget    Int   @default(120)
+  carbsTargetG     Int   @default(220)
+  fatTargetG       Int   @default(60)
   waterTargetMl    Int   @default(2500)
   sleepTargetHours Float @default(8)
 

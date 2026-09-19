@@ -7,6 +7,8 @@ export type Profile = {
 	image: string | null;
 	calorieTarget: number;
 	proteinTarget: number;
+	carbsTargetG: number;
+	fatTargetG: number;
 	waterTargetMl: number;
 	sleepTargetHours: number;
 	heightCm: number | null;
@@ -146,6 +148,8 @@ export type Insights = {
 	days: number;
 	calorieTarget: number;
 	proteinTarget: number;
+	carbsTargetG: number;
+	fatTargetG: number;
 	waterTargetMl: number;
 	sleepTargetHours: number;
 	heightCm: number | null;
