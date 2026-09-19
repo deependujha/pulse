@@ -45,19 +45,41 @@ export const Screen = ({ open, onClose, title, subtitle, children, footer }: Pro
 		onCloseRef.current = onClose;
 	});
 
+	/*
+	 * Taking our entry back off the stack is deferred by a tick so that an
+	 * unmount followed immediately by a remount can cancel it.
+	 *
+	 * Most screens unmount when they close, so that their form starts clean --
+	 * which means this effect runs on *mount*, and React runs a mount twice in
+	 * development: effect, cleanup, effect. `history.back()` is queued rather
+	 * than immediate, so the cleanup's call resolved against the entry that was
+	 * current when it was made, landed *below* the one the second effect had
+	 * just pushed, and fired a popstate carrying no marker -- indistinguishable
+	 * from the user pressing Back. The screen closed in the same frame it
+	 * opened, so the row that opened it looked dead.
+	 */
+	const unwind = useRef<ReturnType<typeof setTimeout> | null>(null);
+
 	/* Back button / gesture closes the screen rather than leaving the app. */
 	useEffect(() => {
 		if (!open) return;
 
-		// Next's App Router keeps its own routing data in history.state and reads
-		// it back on popstate. Replacing that wholesale makes Back look like a
-		// route change and remounts the page under the screen, so the marker is
-		// added alongside it and the URL is kept exactly as it is.
-		window.history.pushState(
-			{ ...window.history.state, overlay: id },
-			"",
-			window.location.href,
-		);
+		if (unwind.current !== null) {
+			// A remount: the entry this screen pushed is still current, so keep it
+			// rather than popping and pushing an identical one.
+			clearTimeout(unwind.current);
+			unwind.current = null;
+		} else {
+			// Next's App Router keeps its own routing data in history.state and
+			// reads it back on popstate. Replacing that wholesale makes Back look
+			// like a route change and remounts the page under the screen, so the
+			// marker is added alongside it and the URL is kept exactly as it is.
+			window.history.pushState(
+				{ ...window.history.state, overlay: id },
+				"",
+				window.location.href,
+			);
+		}
 
 		// A popstate reaches every open screen, and screens nest (the library
 		// manager opens an item editor). Whichever entry we landed on is the one
@@ -71,9 +93,13 @@ export const Screen = ({ open, onClose, title, subtitle, children, footer }: Pro
 
 		return () => {
 			window.removeEventListener("popstate", onPop);
-			// Closed from the UI rather than by Back? Then our entry is still on
-			// the stack and has to come off, or Back would replay this screen.
-			if (window.history.state?.overlay === id) window.history.back();
+			unwind.current = setTimeout(() => {
+				unwind.current = null;
+				// Closed from the UI rather than by Back? Then our entry is still
+				// on the stack and has to come off, or Back would replay this
+				// screen.
+				if (window.history.state?.overlay === id) window.history.back();
+			}, 0);
 		};
 	}, [open, id]);
 

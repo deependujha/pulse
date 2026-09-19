@@ -156,6 +156,9 @@ export const Labelled = ({
  * looks exactly like a person's name. These are all app data, never the user's
  * own details, so every input gets a meaningless generated name and id and opts
  * out of autofill, autocorrect and the password managers.
+ *
+ * Spread *after* a call site's own props, so none of this can be turned back on
+ * by accident: there is no field in this app a browser should ever fill in.
  */
 const noAutofill = (id: string) => ({
 	autoComplete: "off",
@@ -171,13 +174,13 @@ export const TextInput = ({ className, ...props }: React.ComponentProps<"input">
 	const generated = useId();
 	return (
 		<input
-			{...noAutofill(generated)}
 			className={cn(
 				"h-11 w-full rounded-xl border border-border bg-background px-3 text-base",
 				"outline-none placeholder:text-muted-foreground focus:border-foreground",
 				className,
 			)}
 			{...props}
+			{...noAutofill(generated)}
 		/>
 	);
 };
@@ -186,13 +189,13 @@ export const TextArea = ({ className, ...props }: React.ComponentProps<"textarea
 	const generated = useId();
 	return (
 		<textarea
-			{...noAutofill(generated)}
 			className={cn(
 				"w-full rounded-xl border border-border bg-background px-3 py-2.5 text-base",
 				"outline-none placeholder:text-muted-foreground focus:border-foreground",
 				className,
 			)}
 			{...props}
+			{...noAutofill(generated)}
 		/>
 	);
 };
