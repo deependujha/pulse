@@ -23,12 +23,17 @@ export const TrackerPage = () => {
 	const isToday = date === todayKey();
 
 	return (
-		/* `fixed inset-0` rather than `h-[100dvh]`: in an iOS home-screen app the
-		   dynamic viewport units under-report by the safe-area insets, which left
-		   the bottom bar floating short of the screen edge. A fixed box sizes to
-		   the initial containing block, which `viewport-fit=cover` makes the whole
-		   screen. It also stops the page itself from rubber-banding. */
-		<div className="fixed inset-0 flex flex-col bg-background text-foreground">
+		/* `fixed` + `--app-height` rather than `h-[100dvh]`: in an iOS home-screen
+		   app, dynamic viewport units (and a bare `inset-0` box) can under-report
+		   by the safe-area insets on cold launch, which left the bottom bar
+		   floating short of the screen edge. `--app-height` is kept in sync with
+		   `visualViewport.height` by `DisplayModeSync`, which self-corrects once
+		   WebKit reports the real value. It also stops the page from
+		   rubber-banding. */
+		<div
+			className="fixed inset-x-0 top-0 flex flex-col bg-background text-foreground"
+			style={{ height: "var(--app-height, 100dvh)" }}
+		>
 			<header className="glass safe-top z-30 shrink-0 border-b border-border">
 				<div className="mx-auto flex h-14 w-full max-w-lg items-center gap-3 px-4">
 					<img src="/logo.svg" alt="" className="size-7" aria-hidden="true" />
