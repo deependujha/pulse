@@ -11,7 +11,7 @@ import {
 	SegmentedControl,
 	Spinner,
 } from "@/components/common/bits";
-import { Sheet } from "@/components/common/sheet";
+import { Screen } from "@/components/common/screen";
 import { CareStepEditor } from "./care_step_editor";
 import { api, patchCache, refreshAll, useResource } from "@/lib/api";
 import { describeFrequency, isStepDue } from "@/lib/care";
@@ -227,7 +227,7 @@ export const CareTab = ({ date, onDateChange }: TabProps) => {
 				</>
 			)}
 
-			<Sheet
+			<Screen
 				open={manageOpen}
 				onClose={() => setManageOpen(false)}
 				title="Your care routine"
@@ -274,7 +274,7 @@ export const CareTab = ({ date, onDateChange }: TabProps) => {
 						</div>
 					))}
 				</div>
-			</Sheet>
+			</Screen>
 
 			<CareStepEditor
 				open={editorOpen}

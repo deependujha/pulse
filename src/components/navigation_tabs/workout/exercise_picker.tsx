@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { FiCheck, FiPlus, FiSearch } from "react-icons/fi";
-import { Sheet } from "@/components/common/sheet";
+import { Screen } from "@/components/common/screen";
 import { PrimaryButton, TextInput } from "@/components/common/bits";
 import { ExerciseEditor } from "./exercise_editor";
 import type { Exercise } from "@/lib/types";
@@ -46,7 +46,7 @@ export const ExercisePicker = ({ open, onClose, exercises, selected, onConfirm }
 
 	return (
 		<>
-			<Sheet
+			<Screen
 				open={open}
 				onClose={onClose}
 				title="Add exercises"
@@ -137,7 +137,7 @@ export const ExercisePicker = ({ open, onClose, exercises, selected, onConfirm }
 						</p>
 					)}
 				</div>
-			</Sheet>
+			</Screen>
 
 			<ExerciseEditor
 				open={creating}

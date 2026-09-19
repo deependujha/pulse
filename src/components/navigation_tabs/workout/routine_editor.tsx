@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { FiArrowDown, FiArrowUp, FiPlus, FiTrash2 } from "react-icons/fi";
 import { toast } from "sonner";
-import { Sheet } from "@/components/common/sheet";
+import { Screen } from "@/components/common/screen";
 import { Labelled, PrimaryButton, TextInput } from "@/components/common/bits";
 import { ExercisePicker } from "./exercise_picker";
 import { api, refreshAll, useAction } from "@/lib/api";
@@ -131,7 +131,7 @@ const RoutineForm = ({ open, onClose, routine, exercises }: Props) => {
 
 	return (
 		<>
-			<Sheet
+			<Screen
 				open={open}
 				onClose={onClose}
 				title={routine ? "Edit workout" : "New workout"}
@@ -316,7 +316,7 @@ const RoutineForm = ({ open, onClose, routine, exercises }: Props) => {
 						)}
 					</div>
 				</div>
-			</Sheet>
+			</Screen>
 
 			<ExercisePicker
 				open={picking}

@@ -7,7 +7,7 @@ import { DateStrip } from "@/components/common/date-strip";
 import { GhostButton, SectionTitle, Spinner } from "@/components/common/bits";
 import { Ring } from "@/components/common/ring";
 import { ItemEditor } from "./item_editor";
-import { LogSheet } from "./log_sheet";
+import { LogScreen } from "./log_screen";
 import { api, refreshAll, useResource } from "@/lib/api";
 import { MEAL_TYPES, type Bootstrap, type LibraryItem, type MealEntry, type MealType } from "@/lib/types";
 import type { TabProps } from "@/components/navigation_tabs/tracker_map";
@@ -218,7 +218,7 @@ export const MacrosTab = ({ date, onDateChange }: TabProps) => {
 				</>
 			)}
 
-			<LogSheet
+			<LogScreen
 				open={logOpen}
 				onClose={() => setLogOpen(false)}
 				date={date}

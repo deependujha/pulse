@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { FiStar } from "react-icons/fi";
 import { toast } from "sonner";
-import { Sheet } from "@/components/common/sheet";
+import { Screen } from "@/components/common/screen";
 import { Labelled, PrimaryButton, TextInput } from "@/components/common/bits";
 import { api, refreshAll, useAction } from "@/lib/api";
 import type { LibraryItem } from "@/lib/types";
@@ -110,7 +110,7 @@ const ItemForm = ({ open, onClose, item, preset }: Props) => {
 	};
 
 	return (
-		<Sheet
+		<Screen
 			open={open}
 			onClose={onClose}
 			title={item ? "Edit item" : "New item"}
@@ -244,6 +244,6 @@ const ItemForm = ({ open, onClose, item, preset }: Props) => {
 					</span>
 				</button>
 			</div>
-		</Sheet>
+		</Screen>
 	);
 };

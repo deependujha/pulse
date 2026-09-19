@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Sheet } from "@/components/common/sheet";
+import { Screen } from "@/components/common/screen";
 import {
 	Labelled,
 	PrimaryButton,
@@ -96,7 +96,7 @@ const ExerciseForm = ({ open, onClose, exercise, onSaved }: Props) => {
 	};
 
 	return (
-		<Sheet
+		<Screen
 			open={open}
 			onClose={onClose}
 			title={exercise ? "Edit exercise" : "New exercise"}
@@ -188,6 +188,6 @@ const ExerciseForm = ({ open, onClose, exercise, onSaved }: Props) => {
 					/>
 				</Labelled>
 			</div>
-		</Sheet>
+		</Screen>
 	);
 };

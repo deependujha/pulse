@@ -272,13 +272,15 @@ a {
   scroll-snap-align: center;
 }
 
-@keyframes sheet-in {
+@keyframes screen-in {
   from {
-    transform: translateY(100%);
+    opacity: 0;
+    transform: translateX(12px);
   }
 
   to {
-    transform: translateY(0);
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
@@ -292,8 +294,8 @@ a {
   }
 }
 
-.animate-sheet-in {
-  animation: sheet-in 260ms cubic-bezier(0.32, 0.72, 0, 1);
+.animate-screen-in {
+  animation: screen-in 200ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .animate-fade-in {
@@ -302,7 +304,7 @@ a {
 
 @media (prefers-reduced-motion: reduce) {
 
-  .animate-sheet-in,
+  .animate-screen-in,
   .animate-fade-in {
     animation: none;
   }

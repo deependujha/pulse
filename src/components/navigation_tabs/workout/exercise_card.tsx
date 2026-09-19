@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { FiChevronDown, FiEdit3, FiPlay } from "react-icons/fi";
 import { toast } from "sonner";
-import { Sheet } from "@/components/common/sheet";
+import { Screen } from "@/components/common/screen";
 import { PrimaryButton, TextInput } from "@/components/common/bits";
 import { api, useAction } from "@/lib/api";
 import { formatShort } from "@/lib/dates";
@@ -163,7 +163,7 @@ export const ExerciseCard = ({
 };
 
 /** Per-set weight and reps, for when a single tap isn't enough. */
-export const SetDetailSheet = ({
+export const SetDetailScreen = ({
 	open,
 	onClose,
 	item,
@@ -236,7 +236,7 @@ export const SetDetailSheet = ({
 	};
 
 	return (
-		<Sheet
+		<Screen
 			open={open}
 			onClose={onClose}
 			title={item.exercise.name}
@@ -283,6 +283,6 @@ export const SetDetailSheet = ({
 					</li>
 				))}
 			</ul>
-		</Sheet>
+		</Screen>
 	);
 };

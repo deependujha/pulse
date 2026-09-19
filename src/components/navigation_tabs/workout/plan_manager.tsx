@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { FiChevronRight, FiEdit2, FiPlus, FiTrash2 } from "react-icons/fi";
 import { toast } from "sonner";
-import { Sheet } from "@/components/common/sheet";
+import { Screen } from "@/components/common/screen";
 import { GhostButton, SegmentedControl, Select } from "@/components/common/bits";
 import { ExerciseEditor } from "./exercise_editor";
 import { RoutineEditor } from "./routine_editor";
@@ -51,7 +51,7 @@ export const PlanManager = ({ open, onClose, routines, exercises, schedule }: Pr
 
 	return (
 		<>
-			<Sheet open={open} onClose={onClose} title="Your plan">
+			<Screen open={open} onClose={onClose} title="Your plan">
 				<div className="sticky top-0 z-10 bg-background pb-3">
 					<SegmentedControl
 						value={pane}
@@ -184,7 +184,7 @@ export const PlanManager = ({ open, onClose, routines, exercises, schedule }: Pr
 						))}
 					</div>
 				)}
-			</Sheet>
+			</Screen>
 
 			<RoutineEditor
 				open={routineOpen}

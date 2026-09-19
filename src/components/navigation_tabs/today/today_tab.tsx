@@ -6,7 +6,7 @@ import { FiChevronRight, FiDroplet, FiMoon, FiPlus } from "react-icons/fi";
 import { toast } from "sonner";
 import { EmptyState, GhostButton, Labelled, PrimaryButton, SectionTitle, Spinner, Stat, TextInput } from "@/components/common/bits";
 import { MiniRing, Ring } from "@/components/common/ring";
-import { Sheet } from "@/components/common/sheet";
+import { Screen } from "@/components/common/screen";
 import { api, refreshAll, useAction, useResource } from "@/lib/api";
 import { isStepDue } from "@/lib/care";
 import { formatRelative, todayKey } from "@/lib/dates";
@@ -339,7 +339,7 @@ export const TodayTab = ({ date, onNavigate }: TabProps) => {
 				Log what you ate
 			</GhostButton>
 
-			<MetricSheet
+			<MetricScreen
 				open={weightOpen}
 				onClose={() => setWeightOpen(false)}
 				date={date}
@@ -355,7 +355,7 @@ export const TodayTab = ({ date, onNavigate }: TabProps) => {
 				subtitle={weightKg ? `Last recorded ${weightKg} kg` : "Your first weigh-in"}
 			/>
 
-			<MetricSheet
+			<MetricScreen
 				open={sleepOpen}
 				onClose={() => setSleepOpen(false)}
 				date={date}
@@ -397,7 +397,7 @@ const greeting = () => {
  * One numeric field written onto the day's metric row — weight or sleep. Both
  * behave identically, so they share a sheet rather than duplicating one.
  */
-const MetricSheet = ({
+const MetricScreen = ({
 	open,
 	onClose,
 	date,
@@ -447,7 +447,7 @@ const MetricSheet = ({
 	};
 
 	return (
-		<Sheet
+		<Screen
 			open={open}
 			onClose={onClose}
 			title={title}
@@ -472,6 +472,6 @@ const MetricSheet = ({
 					/>
 				</Labelled>
 			</div>
-		</Sheet>
+		</Screen>
 	);
 };

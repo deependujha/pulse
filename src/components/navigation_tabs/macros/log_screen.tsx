@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { FiEdit2, FiMinus, FiPlus, FiSearch, FiStar } from "react-icons/fi";
 import { toast } from "sonner";
-import { Sheet } from "@/components/common/sheet";
+import { Screen } from "@/components/common/screen";
 import {
 	GhostButton,
 	Labelled,
@@ -32,7 +32,7 @@ type Mode = "library" | "oneoff";
  * a one-off. Tapping a row expands it in place — the servings stepper and the
  * confirm button land under your finger rather than in a footer.
  */
-export const LogSheet = ({ open, onClose, date, library, defaultMeal, onLogged }: Props) => {
+export const LogScreen = ({ open, onClose, date, library, defaultMeal, onLogged }: Props) => {
 	const [mode, setMode] = useState<Mode>("library");
 	const [meal, setMeal] = useState<MealType>(defaultMeal);
 	const [query, setQuery] = useState("");
@@ -110,7 +110,7 @@ export const LogSheet = ({ open, onClose, date, library, defaultMeal, onLogged }
 
 	return (
 		<>
-			<Sheet
+			<Screen
 				open={open}
 				onClose={onClose}
 				title="Log it"
@@ -346,7 +346,7 @@ export const LogSheet = ({ open, onClose, date, library, defaultMeal, onLogged }
 						</label>
 					</div>
 				)}
-			</Sheet>
+			</Screen>
 
 			<ItemEditor open={editorOpen} onClose={() => setEditorOpen(false)} item={editorItem} />
 		</>

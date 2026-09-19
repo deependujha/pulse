@@ -5,11 +5,11 @@ import { FiRepeat, FiSettings } from "react-icons/fi";
 import { toast } from "sonner";
 import { DateStrip } from "@/components/common/date-strip";
 import { EmptyState, GhostButton, SectionTitle, Spinner } from "@/components/common/bits";
-import { Sheet } from "@/components/common/sheet";
+import { Screen } from "@/components/common/screen";
 import { api, patchCache, refreshAll, useResource } from "@/lib/api";
 import type { Bootstrap, Routine, SetLog, WorkoutDay } from "@/lib/types";
 import type { TabProps } from "@/components/navigation_tabs/tracker_map";
-import { ExerciseCard, SetDetailSheet } from "./exercise_card";
+import { ExerciseCard, SetDetailScreen } from "./exercise_card";
 import { PlanManager } from "./plan_manager";
 
 export const WorkoutTab = ({ date, onDateChange }: TabProps) => {
@@ -222,7 +222,7 @@ export const WorkoutTab = ({ date, onDateChange }: TabProps) => {
 				</>
 			)}
 
-			<SetDetailSheet
+			<SetDetailScreen
 				open={Boolean(detailItem)}
 				onClose={() => setDetailFor(null)}
 				item={detailItem}
@@ -232,7 +232,7 @@ export const WorkoutTab = ({ date, onDateChange }: TabProps) => {
 				onSaved={() => refreshAll(workoutKey, "/api/insights")}
 			/>
 
-			<Sheet
+			<Screen
 				open={swapOpen}
 				onClose={() => setSwapOpen(false)}
 				title="Today's workout"
@@ -274,7 +274,7 @@ export const WorkoutTab = ({ date, onDateChange }: TabProps) => {
 						</li>
 					))}
 				</ul>
-			</Sheet>
+			</Screen>
 
 			<PlanManager
 				open={planOpen}

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Sheet } from "@/components/common/sheet";
+import { Screen } from "@/components/common/screen";
 import {
 	Labelled,
 	PrimaryButton,
@@ -95,7 +95,7 @@ const CareStepForm = ({ open, onClose, step, defaultPhase }: Props) => {
 	};
 
 	return (
-		<Sheet
+		<Screen
 			open={open}
 			onClose={onClose}
 			title={step ? "Edit step" : "New step"}
@@ -221,6 +221,6 @@ const CareStepForm = ({ open, onClose, step, defaultPhase }: Props) => {
 					/>
 				</Labelled>
 			</div>
-		</Sheet>
+		</Screen>
 	);
 };
