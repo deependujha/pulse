@@ -98,9 +98,11 @@ export const DisplayModeSync = () => {
 			const info = readDisplayInfo();
 			const root = document.documentElement;
 			root.dataset.standalone = String(info.standalone);
-			// The OS having reserved space of its own is the thing that makes our
-			// own inset a duplicate, so record that separately.
-			root.dataset.osReserved = String(info.reserved > 8);
+			// Only an installed app double-counts. A browser tab also reports a
+			// shortfall here - that is its own toolbars, not a reserved strip -
+			// and its insets are genuinely ours to add, which is why Chrome has
+			// always looked right.
+			root.dataset.osReserved = String(info.standalone && info.reserved > 8);
 		};
 
 		apply();

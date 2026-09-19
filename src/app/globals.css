@@ -239,24 +239,19 @@ a {
 }
 
 /*
- * An iOS home-screen app already reserves the home-indicator strip *and* still
- * reports it through env(), so adding the inset here lands it on screen twice.
- * In a browser tab the inset is genuinely ours to add - Chrome on iOS reports 0
- * because its own toolbar sits in that strip, which is why the tab looked right
- * while the installed app did not. The nav keeps its own pb-1.5 either way.
- *
- * The attribute is set by DisplayModeSync: `@media (display-mode: standalone)`
- * is the obvious hook but doesn't reliably match on iOS, so it is kept only as
- * a backstop for browsers where it does.
+ * Whether we owe the home-indicator strip any padding depends on one thing:
+ * did the OS already reserve it outside the layout viewport? DisplayModeSync
+ * measures that (screen.height vs innerHeight) and sets the attribute, because
+ * neither `env()` nor `@media (display-mode: standalone)` answers it reliably
+ * on iOS - an installed app can report a bottom inset that the OS has already
+ * accounted for, which lands it on screen twice.
  */
-:root[data-standalone="true"] .safe-bottom {
-  padding-bottom: 0;
+:root[data-os-reserved="true"] .safe-top {
+  padding-top: 0;
 }
 
-@media (display-mode: standalone) {
-  .safe-bottom {
-    padding-bottom: 0;
-  }
+:root[data-os-reserved="true"] .safe-bottom {
+  padding-bottom: 0;
 }
 
 /* Momentum scrolling inside panes on iOS. */

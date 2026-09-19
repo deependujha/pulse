@@ -32,6 +32,14 @@ export const metadata: Metadata = {
 		title: "pulse",
 		statusBarStyle: "black-translucent",
 	},
+	other: {
+		// Next 16 emits only the standardised `mobile-web-app-capable`, but iOS
+		// honours `apple-mobile-web-app-status-bar-style` only when the
+		// Apple-prefixed tag is present too. Without it the status bar style is
+		// ignored, iOS insets the web view top and bottom, and `viewport-fit=cover`
+		// never gets the full screen.
+		"apple-mobile-web-app-capable": "yes",
+	},
 };
 
 export const viewport: Viewport = {
