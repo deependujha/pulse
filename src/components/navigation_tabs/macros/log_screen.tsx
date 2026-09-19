@@ -39,7 +39,14 @@ export const LogScreen = ({ open, onClose, date, library, defaultMeal, onLogged 
 	const [openId, setOpenId] = useState<string | null>(null);
 	const [servings, setServings] = useState(1);
 
-	const [custom, setCustom] = useState({ name: "", calories: "", proteinG: "", save: false });
+	const [custom, setCustom] = useState({
+		name: "",
+		calories: "",
+		proteinG: "",
+		carbsG: "",
+		fatG: "",
+		save: false,
+	});
 
 	const [editorItem, setEditorItem] = useState<LibraryItem | null>(null);
 	const [editorOpen, setEditorOpen] = useState(false);
@@ -56,7 +63,7 @@ export const LogScreen = ({ open, onClose, date, library, defaultMeal, onLogged 
 		setOpenId(null);
 		setServings(1);
 		setQuery("");
-		setCustom({ name: "", calories: "", proteinG: "", save: false });
+		setCustom({ name: "", calories: "", proteinG: "", carbsG: "", fatG: "", save: false });
 	};
 
 	const logItem = async (item: LibraryItem, count: number) => {
@@ -89,6 +96,8 @@ export const LogScreen = ({ open, onClose, date, library, defaultMeal, onLogged 
 					name: custom.name.trim(),
 					calories: Number(custom.calories),
 					proteinG: Number(custom.proteinG) || 0,
+					carbsG: Number(custom.carbsG) || 0,
+					fatG: Number(custom.fatG) || 0,
 					servings: 1,
 					saveToLibrary: custom.save,
 				}),
@@ -324,16 +333,41 @@ export const LogScreen = ({ open, onClose, date, library, defaultMeal, onLogged 
 							/>
 						</Labelled>
 
-						<Labelled label="Protein (optional)">
-							<TextInput
-								type="number"
-								inputMode="decimal"
-								min={0}
-								value={custom.proteinG}
-								onChange={(e) => setCustom((p) => ({ ...p, proteinG: e.target.value }))}
-								placeholder="g"
-							/>
-						</Labelled>
+						<div className="grid grid-cols-3 gap-2">
+							<Labelled label="Protein (g)">
+								<TextInput
+									type="number"
+									inputMode="decimal"
+									min={0}
+									value={custom.proteinG}
+									onChange={(e) => setCustom((p) => ({ ...p, proteinG: e.target.value }))}
+									placeholder="0"
+								/>
+							</Labelled>
+							<Labelled label="Carbs (g)">
+								<TextInput
+									type="number"
+									inputMode="decimal"
+									min={0}
+									value={custom.carbsG}
+									onChange={(e) => setCustom((p) => ({ ...p, carbsG: e.target.value }))}
+									placeholder="0"
+								/>
+							</Labelled>
+							<Labelled label="Fat (g)">
+								<TextInput
+									type="number"
+									inputMode="decimal"
+									min={0}
+									value={custom.fatG}
+									onChange={(e) => setCustom((p) => ({ ...p, fatG: e.target.value }))}
+									placeholder="0"
+								/>
+							</Labelled>
+						</div>
+						<p className="-mt-2 text-xs text-muted-foreground">
+							Macros are optional &mdash; leave them blank if you&rsquo;re only counting calories.
+						</p>
 
 						<label className="flex min-h-12 items-center gap-3 rounded-xl border border-border px-3">
 							<input
