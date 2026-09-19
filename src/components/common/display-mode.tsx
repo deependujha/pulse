@@ -98,11 +98,16 @@ export const DisplayModeSync = () => {
 			const info = readDisplayInfo();
 			const root = document.documentElement;
 			root.dataset.standalone = String(info.standalone);
-			// Only an installed app double-counts. A browser tab also reports a
-			// shortfall here - that is its own toolbars, not a reserved strip -
-			// and its insets are genuinely ours to add, which is why Chrome has
-			// always looked right.
-			root.dataset.osReserved = String(info.standalone && info.reserved > 8);
+
+			// Deliberately NOT gated on `info.standalone`: iOS does not reliably
+			// report that an app was launched from the home screen, and gating on
+			// it means a bad detection silently disables the correction. The
+			// measurement stands on its own in every case:
+			//   installed, inset by iOS  -> reserved ~93, env() would double  -> drop ours
+			//   installed, full screen   -> reserved 0,  env() is ours to add -> keep
+			//   browser, toolbars shown  -> reserved big, but env() reports 0  -> no-op
+			//   browser, toolbars hidden -> reserved ~0, env() is ours to add -> keep
+			root.dataset.osReserved = String(info.reserved > 8);
 		};
 
 		apply();
