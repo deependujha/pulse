@@ -69,7 +69,9 @@ export const TrackerPage = () => {
 			</header>
 
 			<main className="scroll-y flex-1">
-				<div className="mx-auto w-full max-w-lg px-4 pt-4 pb-6">
+				{/* The bottom padding is a full tab-bar's worth of run-off, so the last
+				    card in a tab clears the nav instead of ending flush against it. */}
+				<div className="mx-auto w-full max-w-lg px-4 pt-4 pb-20">
 					{showProfile ? (
 						<ProfileTab />
 					) : (

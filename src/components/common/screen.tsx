@@ -182,7 +182,8 @@ export const Screen = ({ open, onClose, title, subtitle, children, footer }: Pro
 				<div className="scroll-y min-h-0 flex-1 px-4 pt-3 sm:px-5">
 					{children}
 					{footer && <div className="mt-5">{footer}</div>}
-					<div className="safe-bottom pb-3" />
+					{/* Run-off past the last element, plus the home-indicator inset. */}
+					<div className="safe-bottom pb-10" />
 				</div>
 			</div>
 		</div>
