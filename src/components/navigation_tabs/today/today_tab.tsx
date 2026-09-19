@@ -326,12 +326,14 @@ const ViewportDebug = () => {
 
 	return (
 		<div className="rounded-xl border border-dashed border-border px-3 py-2 font-mono text-[11px] leading-relaxed break-all text-muted-foreground">
-			inner {info.innerHeight} · screen {info.screenHeight} · reserved {info.reserved}
+			inner {info.innerHeight} · screen {info.screenHeight} · screenY {info.screenY}
+			<br />
+			reservedTop {info.reservedTop} · reservedBottom {info.reservedBottom}
 			<br />
 			env top {info.safeTop} · env bottom {info.safeBottom}
 			<br />
-			nav.standalone {String(info.navigatorStandalone)} · mq{" "}
-			{String(info.matchesStandaloneQuery)} · osReserved {String(info.reserved > 8)}
+			applyTop {String(info.reservedTop <= 8)} · applyBottom{" "}
+			{String(info.reservedBottom <= 8)}
 		</div>
 	);
 };

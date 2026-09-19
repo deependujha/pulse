@@ -8,8 +8,11 @@ export type DisplayInfo = {
 	matchesStandaloneQuery: boolean;
 	innerHeight: number;
 	screenHeight: number;
-	/** Height the OS reserves outside the layout viewport (status bar + home indicator). */
-	reserved: number;
+	screenY: number;
+	/** Space the OS reserved above the layout viewport. */
+	reservedTop: number;
+	/** Space the OS reserved below it. */
+	reservedBottom: number;
 	safeTop: number;
 	safeBottom: number;
 };
@@ -32,13 +35,23 @@ export const readDisplayInfo = (): DisplayInfo => {
 
 	const matchesStandaloneQuery = window.matchMedia("(display-mode: standalone)").matches;
 
+	// Where the web view sits on the screen tells us which edge the OS took.
+	// Reading it per-edge matters: an installed iOS app can have the status bar
+	// handled for it while still extending under the home indicator, and a
+	// single "something was reserved" flag then wrongly drops both insets.
+	const screenY = Math.max(0, Math.round(window.screenY || 0));
+	const innerHeight = window.innerHeight;
+	const screenHeight = window.screen.height;
+
 	return {
 		standalone: navigatorStandalone === true || matchesStandaloneQuery,
 		navigatorStandalone,
 		matchesStandaloneQuery,
-		innerHeight: window.innerHeight,
-		screenHeight: window.screen.height,
-		reserved: Math.max(0, Math.round(window.screen.height - window.innerHeight)),
+		innerHeight,
+		screenHeight,
+		screenY,
+		reservedTop: screenY,
+		reservedBottom: Math.max(0, Math.round(screenHeight - screenY - innerHeight)),
 		safeTop: measureEnv("top"),
 		safeBottom: measureEnv("bottom"),
 	};
@@ -99,15 +112,20 @@ export const DisplayModeSync = () => {
 			const root = document.documentElement;
 			root.dataset.standalone = String(info.standalone);
 
-			// Deliberately NOT gated on `info.standalone`: iOS does not reliably
-			// report that an app was launched from the home screen, and gating on
-			// it means a bad detection silently disables the correction. The
-			// measurement stands on its own in every case:
-			//   installed, inset by iOS  -> reserved ~93, env() would double  -> drop ours
-			//   installed, full screen   -> reserved 0,  env() is ours to add -> keep
-			//   browser, toolbars shown  -> reserved big, but env() reports 0  -> no-op
-			//   browser, toolbars hidden -> reserved ~0, env() is ours to add -> keep
-			root.dataset.osReserved = String(info.reserved > 8);
+			// Each edge is decided on its own evidence. An inset is ours to add
+			// only where the OS left that edge to us; where the OS already moved
+			// the web view clear, honouring env() there would double it.
+			root.dataset.insetTop = String(info.reservedTop <= 8);
+			root.dataset.insetBottom = String(info.reservedBottom <= 8);
+
+			// An installed iOS app paints the whole screen but reports a layout
+			// viewport short by the status-bar inset, so a `fixed inset-0` shell
+			// stops above the bottom edge and leaves page background showing under
+			// the nav. Drive the height from the screen instead, where they differ.
+			const height = info.standalone
+				? Math.max(info.innerHeight, info.screenHeight - info.screenY)
+				: info.innerHeight;
+			root.style.setProperty("--app-height", `${height}px`);
 		};
 
 		apply();

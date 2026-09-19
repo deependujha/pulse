@@ -230,28 +230,43 @@ a {
   -webkit-backdrop-filter: saturate(180%) blur(16px);
 }
 
+/*
+ * Whether we owe an edge its inset is decided per edge, from where the web view
+ * actually sits on the screen (DisplayModeSync). Neither `env()` nor
+ * `@media (display-mode: standalone)` answers this on iOS: an installed app
+ * happily reports an inset for an edge the OS has already moved it clear of,
+ * and honouring that lands the gap on screen twice.
+ *
+ * Default is off, so a frame before script runs never shows a doubled gap.
+ */
 .safe-top {
-  padding-top: env(safe-area-inset-top);
+  padding-top: 0;
 }
 
 .safe-bottom {
+  padding-bottom: 0;
+}
+
+:root[data-inset-top="true"] .safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+:root[data-inset-bottom="true"] .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
 /*
- * Whether we owe the home-indicator strip any padding depends on one thing:
- * did the OS already reserve it outside the layout viewport? DisplayModeSync
- * measures that (screen.height vs innerHeight) and sets the attribute, because
- * neither `env()` nor `@media (display-mode: standalone)` answers it reliably
- * on iOS - an installed app can report a bottom inset that the OS has already
- * accounted for, which lands it on screen twice.
+ * The app shell. Height comes from --app-height (set by DisplayModeSync) rather
+ * than inset-0 or 100dvh, both of which resolve to the short layout viewport an
+ * installed iOS app reports. The fallback covers the pre-script frame and every
+ * browser where the two agree.
  */
-:root[data-os-reserved="true"] .safe-top {
-  padding-top: 0;
-}
-
-:root[data-os-reserved="true"] .safe-bottom {
-  padding-bottom: 0;
+.app-shell {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--app-height, 100dvh);
 }
 
 /* Momentum scrolling inside panes on iOS. */

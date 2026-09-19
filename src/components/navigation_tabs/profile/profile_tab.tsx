@@ -224,7 +224,9 @@ const DisplayDiagnostics = () => {
 			<Row label="display-mode query" value={String(info.matchesStandaloneQuery)} />
 			<Row label="innerHeight" value={`${info.innerHeight}`} />
 			<Row label="screen.height" value={`${info.screenHeight}`} />
-			<Row label="OS reserved" value={`${info.reserved}`} />
+			<Row label="screenY" value={`${info.screenY}`} />
+			<Row label="reserved top" value={`${info.reservedTop}`} />
+			<Row label="reserved bottom" value={`${info.reservedBottom}`} />
 			<Row label="env safe-top" value={`${info.safeTop}`} />
 			<Row label="env safe-bottom" value={`${info.safeBottom}`} />
 		</dl>

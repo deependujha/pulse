@@ -23,10 +23,11 @@ export const TrackerPage = () => {
 	const isToday = date === todayKey();
 
 	return (
-		<div
-			className="fixed inset-x-0 top-0 flex flex-col bg-background text-foreground"
-			style={{ height: "100dvh" }}
-		>
+		// `.app-shell` pins the same box, but takes its height from --app-height
+		// (measured in DisplayModeSync) instead of 100dvh, which resolves to the
+		// short layout viewport an installed iOS app reports. It falls back to
+		// 100dvh before script runs and wherever the two agree.
+		<div className="app-shell flex flex-col bg-background text-foreground">
 			<header className="glass safe-top z-30 shrink-0 border-b border-border">
 				<div className="mx-auto flex h-14 w-full max-w-lg items-center gap-3 px-4">
 					<img src="/logo.svg" alt="" className="size-7" aria-hidden="true" />
