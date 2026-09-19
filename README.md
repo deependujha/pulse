@@ -58,11 +58,19 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=
-DATABASE_URL=
+DATABASE_URL=          # Neon pooled endpoint (the -pooler host)
+DIRECT_URL=            # optional; only if the direct host isn't derivable
 ```
 
 `npm run build` applies pending migrations before building, so a deploy brings
 the schema with it.
+
+**Migrations never go through the pooler.** `prisma migrate` guards itself with
+a session-level advisory lock, and PgBouncer in transaction mode doesn't pin a
+session across statements, so the lock times out with `P1002`. `prisma.config.ts`
+strips the `-pooler` suffix off `DATABASE_URL` to find the direct endpoint;
+set `DIRECT_URL` explicitly to override that. The app itself keeps using the
+pooled URL, which is what a serverless runtime wants.
 
 ## How it's laid out
 
