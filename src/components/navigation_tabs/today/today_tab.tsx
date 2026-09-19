@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { EmptyState, GhostButton, Labelled, PrimaryButton, SectionTitle, Spinner, Stat, TextInput } from "@/components/common/bits";
 import { MiniRing, Ring } from "@/components/common/ring";
 import { Sheet } from "@/components/common/sheet";
-import { useDisplayInfo } from "@/components/common/display-mode";
 import { api, refreshAll, useAction, useResource } from "@/lib/api";
 import { isStepDue } from "@/lib/care";
 import { formatRelative, todayKey } from "@/lib/dates";
@@ -76,10 +75,6 @@ export const TodayTab = ({ date, onNavigate }: TabProps) => {
 
 	return (
 		<div className="space-y-5">
-			{/* TEMPORARY: viewport diagnostics while the iOS home-screen inset is
-			    being chased down. Delete this and the Profile block once fixed. */}
-			<ViewportDebug />
-
 			<header>
 				<h1 className="text-2xl font-semibold">
 					{greeting()}
@@ -315,24 +310,6 @@ export const TodayTab = ({ date, onNavigate }: TabProps) => {
 				current={metric?.weightKg ?? metrics.data?.lastWeight?.weightKg ?? null}
 				metricsKey={metricsKey}
 			/>
-		</div>
-	);
-};
-
-/** TEMPORARY — remove once the standalone inset is settled. */
-const ViewportDebug = () => {
-	const info = useDisplayInfo();
-	if (!info) return null;
-
-	return (
-		<div className="rounded-xl border border-dashed border-border px-3 py-2 font-mono text-[11px] leading-relaxed break-all text-muted-foreground">
-			inner {info.innerHeight} · screen {info.screenHeight} · screenY {info.screenY}
-			<br />
-			reservedTop {info.reservedTop} · reservedBottom {info.reservedBottom}
-			<br />
-			env top {info.safeTop} · env bottom {info.safeBottom}
-			<br />
-			shell {info.shellHeight} · standalone {String(info.standalone)}
 		</div>
 	);
 };
