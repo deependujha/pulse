@@ -15,6 +15,8 @@ export type DisplayInfo = {
 	reservedBottom: number;
 	safeTop: number;
 	safeBottom: number;
+	/** What the shell actually measures, to catch it disagreeing with the screen. */
+	shellHeight: number;
 };
 
 /** Renders a throwaway probe to read what `env()` actually resolves to. */
@@ -54,6 +56,9 @@ export const readDisplayInfo = (): DisplayInfo => {
 		reservedBottom: Math.max(0, Math.round(screenHeight - screenY - innerHeight)),
 		safeTop: measureEnv("top"),
 		safeBottom: measureEnv("bottom"),
+		shellHeight: Math.round(
+			document.querySelector(".app-shell")?.getBoundingClientRect().height ?? 0,
+		),
 	};
 };
 
@@ -84,66 +89,21 @@ export const useDisplayInfo = (): DisplayInfo | null => {
 };
 
 /**
- * Marks the document when the app is running from the home screen.
+ * Reports viewport geometry for the temporary on-screen readout.
  *
- * iOS reserves the home-indicator strip for an installed app but still reports
- * it through `env(safe-area-inset-bottom)`, so honouring the inset there lands
- * it on screen twice. `@media (display-mode: standalone)` is the obvious hook
- * but doesn't reliably match on iOS — `navigator.standalone` is the signal that
- * does, hence doing this from script rather than CSS alone.
- *
- * It also keeps `--app-height` in sync with `visualViewport.height`. On a cold
- * launch from the home screen, WebKit briefly reports `100dvh`/`inset:0` (and
- * `env(safe-area-inset-bottom)`) as if the home indicator strip weren't there,
- * which is what left the bottom bar floating above it — the value only
- * self-corrects after a later resize, e.g. from rotating the device. Reading
- * `visualViewport.height` instead, and re-reading it a beat after mount, gets
- * the real number without waiting on the user to trigger a resize.
+ * This used to also correct the layout - measuring which edges the OS had
+ * reserved and overriding the safe-area insets. None of that is needed now the
+ * status bar style no longer asks for a full-screen viewport that iOS sizes
+ * wrong; plain `env()` and `100dvh` are correct again. Delete this component
+ * along with the readout.
  */
-const setAppHeight = () => {
-	const height = window.visualViewport?.height ?? window.innerHeight;
-	document.documentElement.style.setProperty("--app-height", `${height}px`);
-};
-
 export const DisplayModeSync = () => {
 	useEffect(() => {
-		const apply = () => {
-			const info = readDisplayInfo();
-			const root = document.documentElement;
-			root.dataset.standalone = String(info.standalone);
-
-			// Each edge is decided on its own evidence. An inset is ours to add
-			// only where the OS left that edge to us; where the OS already moved
-			// the web view clear, honouring env() there would double it.
-			root.dataset.insetTop = String(info.reservedTop <= 8);
-			root.dataset.insetBottom = String(info.reservedBottom <= 8);
-
-			// An installed iOS app paints the whole screen but reports a layout
-			// viewport short by the status-bar inset, so a `fixed inset-0` shell
-			// stops above the bottom edge and leaves page background showing under
-			// the nav. Drive the height from the screen instead, where they differ.
-			const height = info.standalone
-				? Math.max(info.innerHeight, info.screenHeight - info.screenY)
-				: info.innerHeight;
-			root.style.setProperty("--app-height", `${height}px`);
+		const invalidateOnRotate = () => {
+			snapshot = null;
 		};
-
-		apply();
-		setAppHeight();
-		// WebKit's initial figure is sometimes stale; a follow-up read after the
-		// first paint catches the corrected value without needing user input.
-		const retry = window.setTimeout(setAppHeight, 300);
-
-		window.addEventListener("orientationchange", apply);
-		window.addEventListener("resize", setAppHeight);
-		window.visualViewport?.addEventListener("resize", setAppHeight);
-
-		return () => {
-			window.clearTimeout(retry);
-			window.removeEventListener("orientationchange", apply);
-			window.removeEventListener("resize", setAppHeight);
-			window.visualViewport?.removeEventListener("resize", setAppHeight);
-		};
+		window.addEventListener("orientationchange", invalidateOnRotate);
+		return () => window.removeEventListener("orientationchange", invalidateOnRotate);
 	}, []);
 
 	return null;

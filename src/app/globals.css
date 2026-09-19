@@ -231,42 +231,29 @@ a {
 }
 
 /*
- * Whether we owe an edge its inset is decided per edge, from where the web view
- * actually sits on the screen (DisplayModeSync). Neither `env()` nor
- * `@media (display-mode: standalone)` answers this on iOS: an installed app
- * happily reports an inset for an edge the OS has already moved it clear of,
- * and honouring that lands the gap on screen twice.
- *
- * Default is off, so a frame before script runs never shows a doubled gap.
+ * With a sane viewport these need no help: iOS reports 0 for an edge it has
+ * already inset the web view clear of, and the real inset for one the page
+ * extends under. The measuring and per-edge overrides that used to live here
+ * were only ever compensating for the black-translucent viewport bug.
  */
 .safe-top {
-  padding-top: 0;
-}
-
-.safe-bottom {
-  padding-bottom: 0;
-}
-
-:root[data-inset-top="true"] .safe-top {
   padding-top: env(safe-area-inset-top);
 }
 
-:root[data-inset-bottom="true"] .safe-bottom {
+.safe-bottom {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
 /*
- * The app shell. Height comes from --app-height (set by DisplayModeSync) rather
- * than inset-0 or 100dvh, both of which resolve to the short layout viewport an
- * installed iOS app reports. The fallback covers the pre-script frame and every
- * browser where the two agree.
+ * The app shell: a fixed box the exact size of the viewport, so the page itself
+ * never scrolls or rubber-bands and the bottom bar sits on the bottom edge.
  */
 .app-shell {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: var(--app-height, 100dvh);
+  height: 100dvh;
 }
 
 /* Momentum scrolling inside panes on iOS. */

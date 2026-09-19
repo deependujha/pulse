@@ -332,8 +332,7 @@ const ViewportDebug = () => {
 			<br />
 			env top {info.safeTop} · env bottom {info.safeBottom}
 			<br />
-			applyTop {String(info.reservedTop <= 8)} · applyBottom{" "}
-			{String(info.reservedBottom <= 8)}
+			shell {info.shellHeight} · standalone {String(info.standalone)}
 		</div>
 	);
 };

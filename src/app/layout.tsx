@@ -30,7 +30,13 @@ export const metadata: Metadata = {
 	appleWebApp: {
 		capable: true,
 		title: "pulse",
-		statusBarStyle: "black-translucent",
+		// Deliberately NOT "black-translucent". That style asks iOS for a
+		// full-screen web view, and what it actually produced on an installed app
+		// was a view positioned at y=0 but sized screen-height MINUS the status
+		// bar - so the bottom 59pt fell outside the page and nothing could paint
+		// there. With the default style iOS insets the view below the status bar
+		// and it reaches the bottom edge, which is all the layout ever needed.
+		statusBarStyle: "default",
 	},
 	other: {
 		// Next 16 emits only the standardised `mobile-web-app-capable`, but iOS
