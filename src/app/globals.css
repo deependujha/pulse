@@ -238,6 +238,19 @@ a {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/*
+ * An iOS home-screen app already reserves the home-indicator strip *and* still
+ * reports it through env(), so adding the inset here lands it on screen twice.
+ * In a browser tab the inset is genuinely ours to add - Chrome on iOS reports 0
+ * because its own toolbar sits in that strip, which is why the tab looked right
+ * while the installed app did not. The nav keeps its own pb-1.5 either way.
+ */
+@media (display-mode: standalone) {
+  .safe-bottom {
+    padding-bottom: 0;
+  }
+}
+
 /* Momentum scrolling inside panes on iOS. */
 .scroll-y {
   overflow-y: auto;
