@@ -78,7 +78,20 @@ export const useDisplayInfo = (): DisplayInfo | null => {
  * it on screen twice. `@media (display-mode: standalone)` is the obvious hook
  * but doesn't reliably match on iOS — `navigator.standalone` is the signal that
  * does, hence doing this from script rather than CSS alone.
+ *
+ * It also keeps `--app-height` in sync with `visualViewport.height`. On a cold
+ * launch from the home screen, WebKit briefly reports `100dvh`/`inset:0` (and
+ * `env(safe-area-inset-bottom)`) as if the home indicator strip weren't there,
+ * which is what left the bottom bar floating above it — the value only
+ * self-corrects after a later resize, e.g. from rotating the device. Reading
+ * `visualViewport.height` instead, and re-reading it a beat after mount, gets
+ * the real number without waiting on the user to trigger a resize.
  */
+const setAppHeight = () => {
+	const height = window.visualViewport?.height ?? window.innerHeight;
+	document.documentElement.style.setProperty("--app-height", `${height}px`);
+};
+
 export const DisplayModeSync = () => {
 	useEffect(() => {
 		const apply = () => {
@@ -91,8 +104,21 @@ export const DisplayModeSync = () => {
 		};
 
 		apply();
+		setAppHeight();
+		// WebKit's initial figure is sometimes stale; a follow-up read after the
+		// first paint catches the corrected value without needing user input.
+		const retry = window.setTimeout(setAppHeight, 300);
+
 		window.addEventListener("orientationchange", apply);
-		return () => window.removeEventListener("orientationchange", apply);
+		window.addEventListener("resize", setAppHeight);
+		window.visualViewport?.addEventListener("resize", setAppHeight);
+
+		return () => {
+			window.clearTimeout(retry);
+			window.removeEventListener("orientationchange", apply);
+			window.removeEventListener("resize", setAppHeight);
+			window.visualViewport?.removeEventListener("resize", setAppHeight);
+		};
 	}, []);
 
 	return null;
