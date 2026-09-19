@@ -244,7 +244,15 @@ a {
  * In a browser tab the inset is genuinely ours to add - Chrome on iOS reports 0
  * because its own toolbar sits in that strip, which is why the tab looked right
  * while the installed app did not. The nav keeps its own pb-1.5 either way.
+ *
+ * The attribute is set by DisplayModeSync: `@media (display-mode: standalone)`
+ * is the obvious hook but doesn't reliably match on iOS, so it is kept only as
+ * a backstop for browsers where it does.
  */
+:root[data-standalone="true"] .safe-bottom {
+  padding-bottom: 0;
+}
+
 @media (display-mode: standalone) {
   .safe-bottom {
     padding-bottom: 0;

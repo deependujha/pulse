@@ -13,6 +13,7 @@ import {
 	TextInput,
 } from "@/components/common/bits";
 import type { Profile } from "@/lib/types";
+import { useDisplayInfo } from "@/components/common/display-mode";
 import { api, refreshAll, useAction, useResource } from "@/lib/api";
 import { CURRENT_VERSION } from "@/constants/version";
 import type { Bootstrap } from "@/lib/types";
@@ -117,6 +118,11 @@ export const ProfileTab = () => {
 				</dl>
 			</section>
 
+			<section>
+				<SectionTitle title="Display" caption="What this device reports — for debugging layout" />
+				<DisplayDiagnostics />
+			</section>
+
 			<section className="space-y-3">
 				<button
 					type="button"
@@ -204,6 +210,24 @@ const GoalsForm = ({ profile }: { profile: Profile }) => {
 				{pending ? "Saving…" : "Save goals"}
 			</PrimaryButton>
 		</div>
+	);
+};
+
+const DisplayDiagnostics = () => {
+	const info = useDisplayInfo();
+	if (!info) return null;
+
+	return (
+		<dl className="space-y-1.5 rounded-2xl border border-border bg-card p-4 text-sm">
+			<Row label="Standalone" value={String(info.standalone)} />
+			<Row label="navigator.standalone" value={String(info.navigatorStandalone)} />
+			<Row label="display-mode query" value={String(info.matchesStandaloneQuery)} />
+			<Row label="innerHeight" value={`${info.innerHeight}`} />
+			<Row label="screen.height" value={`${info.screenHeight}`} />
+			<Row label="OS reserved" value={`${info.reserved}`} />
+			<Row label="env safe-top" value={`${info.safeTop}`} />
+			<Row label="env safe-bottom" value={`${info.safeBottom}`} />
+		</dl>
 	);
 };
 
