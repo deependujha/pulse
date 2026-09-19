@@ -52,16 +52,17 @@ export const LibraryManager = ({ open, onClose, library }: Props) => {
 				onClose={onClose}
 				title="Macros library"
 				subtitle={`${library.length} ${library.length === 1 ? "item" : "items"}`}
-				footer={
-					<GhostButton
-						className="flex w-full items-center justify-center gap-2"
-						onClick={() => openEditor(null)}
-					>
-						<FiPlus size={16} />
-						New item
-					</GhostButton>
-				}
 			>
+				{/* Adding lives at the top: at the end of a long library you'd have to
+				    scroll the whole list to reach it. */}
+				<GhostButton
+					className="mb-3 flex w-full items-center justify-center gap-2"
+					onClick={() => openEditor(null)}
+				>
+					<FiPlus size={16} />
+					New item
+				</GhostButton>
+
 				{library.length === 0 ? (
 					<div className="space-y-3 rounded-2xl border border-dashed border-border px-4 py-10 text-center">
 						<div className="text-3xl">📖</div>

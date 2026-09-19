@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { cn } from "@/lib/utils";
 
 export const SectionTitle = ({
@@ -149,27 +150,52 @@ export const Labelled = ({
 	</label>
 );
 
-export const TextInput = ({ className, ...props }: React.ComponentProps<"input">) => (
-	<input
-		className={cn(
-			"h-11 w-full rounded-xl border border-border bg-background px-3 text-base",
-			"outline-none placeholder:text-muted-foreground focus:border-foreground",
-			className,
-		)}
-		{...props}
-	/>
-);
+/**
+ * iOS decides whether to offer "AutoFill Contact" from the field's name and id
+ * and the label text around it — a field called `name` next to the word "Name"
+ * looks exactly like a person's name. These are all app data, never the user's
+ * own details, so every input gets a meaningless generated name and id and opts
+ * out of autofill, autocorrect and the password managers.
+ */
+const noAutofill = (id: string) => ({
+	autoComplete: "off",
+	autoCorrect: "off",
+	name: id,
+	id,
+	"data-1p-ignore": true,
+	"data-lpignore": "true",
+	"data-form-type": "other",
+});
 
-export const TextArea = ({ className, ...props }: React.ComponentProps<"textarea">) => (
-	<textarea
-		className={cn(
-			"w-full rounded-xl border border-border bg-background px-3 py-2.5 text-base",
-			"outline-none placeholder:text-muted-foreground focus:border-foreground",
-			className,
-		)}
-		{...props}
-	/>
-);
+export const TextInput = ({ className, ...props }: React.ComponentProps<"input">) => {
+	const generated = useId();
+	return (
+		<input
+			{...noAutofill(generated)}
+			className={cn(
+				"h-11 w-full rounded-xl border border-border bg-background px-3 text-base",
+				"outline-none placeholder:text-muted-foreground focus:border-foreground",
+				className,
+			)}
+			{...props}
+		/>
+	);
+};
+
+export const TextArea = ({ className, ...props }: React.ComponentProps<"textarea">) => {
+	const generated = useId();
+	return (
+		<textarea
+			{...noAutofill(generated)}
+			className={cn(
+				"w-full rounded-xl border border-border bg-background px-3 py-2.5 text-base",
+				"outline-none placeholder:text-muted-foreground focus:border-foreground",
+				className,
+			)}
+			{...props}
+		/>
+	);
+};
 
 export const Select = ({ className, children, ...props }: React.ComponentProps<"select">) => (
 	<select

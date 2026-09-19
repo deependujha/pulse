@@ -107,8 +107,12 @@ export const Screen = ({ open, onClose, title, subtitle, children, footer }: Pro
 		if (!vv || !frame) return;
 
 		const apply = () => {
-			frame.style.height = `${vv.height}px`;
-			frame.style.transform = `translateY(${vv.offsetTop}px)`;
+			// The frame keeps covering the whole screen, so the page behind never
+			// shows in the band beside the keyboard. Only the *content* is inset,
+			// by however much of the screen the keyboard is sitting over.
+			const covered = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+			frame.style.paddingTop = vv.offsetTop ? `${vv.offsetTop}px` : "";
+			frame.style.paddingBottom = covered ? `${covered}px` : "";
 		};
 
 		apply();
@@ -117,6 +121,8 @@ export const Screen = ({ open, onClose, title, subtitle, children, footer }: Pro
 		return () => {
 			vv.removeEventListener("resize", apply);
 			vv.removeEventListener("scroll", apply);
+			frame.style.paddingTop = "";
+			frame.style.paddingBottom = "";
 		};
 	}, [open]);
 
@@ -125,7 +131,10 @@ export const Screen = ({ open, onClose, title, subtitle, children, footer }: Pro
 	return (
 		<div
 			ref={frameRef}
-			className="fixed top-0 left-0 z-50 flex h-dvh w-full flex-col sm:items-center sm:justify-center sm:p-6"
+			className={cn(
+				"fixed inset-0 z-50 flex flex-col bg-background",
+				"sm:items-center sm:justify-center sm:bg-transparent sm:p-6",
+			)}
 		>
 			{/* Only reachable on desktop, where the dialog doesn't fill the frame. */}
 			<button
@@ -167,15 +176,14 @@ export const Screen = ({ open, onClose, title, subtitle, children, footer }: Pro
 					<span aria-hidden="true" className="w-12 shrink-0 sm:hidden" />
 				</div>
 
-				<div className="scroll-y min-h-0 flex-1 px-4 pt-3 pb-3 sm:px-5">{children}</div>
-
-				{footer ? (
-					<div className="safe-bottom shrink-0 border-t border-border px-4 pt-3 pb-3 sm:px-5">
-						{footer}
-					</div>
-				) : (
-					<div className="safe-bottom shrink-0" />
-				)}
+				{/* The action scrolls with the content and sits right after it. Pinned
+				    to its own row it landed under the keyboard, or level with the tab
+				    bar, where it was hard to see and harder to hit. */}
+				<div className="scroll-y min-h-0 flex-1 px-4 pt-3 sm:px-5">
+					{children}
+					{footer && <div className="mt-5">{footer}</div>}
+					<div className="safe-bottom pb-3" />
+				</div>
 			</div>
 		</div>
 	);
