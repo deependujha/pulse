@@ -230,13 +230,13 @@ a {
   -webkit-backdrop-filter: saturate(180%) blur(16px);
 }
 
-/* .safe-top {
+.safe-top {
   padding-top: env(safe-area-inset-top);
 }
 
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom);
-} */
+}
 
 /*
  * An iOS home-screen app already reserves the home-indicator strip *and* still

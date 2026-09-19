@@ -23,16 +23,9 @@ export const TrackerPage = () => {
 	const isToday = date === todayKey();
 
 	return (
-		/* `fixed` + `--app-height` rather than `h-[100dvh]`: in an iOS home-screen
-		   app, dynamic viewport units (and a bare `inset-0` box) can under-report
-		   by the safe-area insets on cold launch, which left the bottom bar
-		   floating short of the screen edge. `--app-height` is kept in sync with
-		   `visualViewport.height` by `DisplayModeSync`, which self-corrects once
-		   WebKit reports the real value. It also stops the page from
-		   rubber-banding. */
 		<div
 			className="fixed inset-x-0 top-0 flex flex-col bg-background text-foreground"
-			style={{ height: "var(--app-height, 100dvh)" }}
+			style={{ height: "100dvh" }}
 		>
 			<header className="glass safe-top z-30 shrink-0 border-b border-border">
 				<div className="mx-auto flex h-14 w-full max-w-lg items-center gap-3 px-4">
@@ -90,9 +83,9 @@ export const TrackerPage = () => {
 
 			<nav
 				aria-label="Sections"
-				className="glass z-30 shrink-0 border-t border-border pb-3"
+				className="glass z-30 shrink-0 border-t border-border"
 			>
-				<div className="mx-auto flex w-full max-w-lg items-stretch justify-around px-2 pt-1.5 pb-1.5">
+				<div className="mx-auto flex w-full max-w-lg items-stretch justify-around px-2 pt-1.5">
 					{TAB_IDS.map((tab) => {
 						const { icon: Icon, label: tabLabel, accent } = TrackerTabMap[tab];
 						const isActive = !showProfile && activeTab === tab;
@@ -106,7 +99,7 @@ export const TrackerPage = () => {
 									setShowProfile(false);
 									setActiveTab(tab);
 								}}
-								className="flex min-h-12 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 transition active:scale-95"
+								className="flex min-h-12 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 transition active:scale-95"
 							>
 								<Icon
 									size={20}
