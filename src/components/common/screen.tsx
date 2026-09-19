@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef } from "react";
+import { createPortal } from "react-dom";
 import { FiChevronLeft } from "react-icons/fi";
 import { cn } from "@/lib/utils";
 
@@ -152,9 +153,25 @@ export const Screen = ({ open, onClose, title, subtitle, children, footer }: Pro
 		};
 	}, [open]);
 
-	if (!open) return null;
+	// `document` is only missing on the server, and every screen starts closed,
+	// so this never changes what the server rendered.
+	if (!open || typeof document === "undefined") return null;
 
-	return (
+	/*
+	 * Rendered into <body> rather than where it sits in the tree.
+	 *
+	 * The shell's scrolling pane carries `-webkit-overflow-scrolling: touch`, and
+	 * an iOS web view makes such a pane a containing block for `position: fixed`
+	 * descendants. In the installed app the screen was therefore laid out inside
+	 * the scroller instead of over the viewport: its header ended up above the
+	 * visible area, so there was no back arrow, and the tab bar — which lives
+	 * outside the scroller — kept painting on top of it. A browser ignores the
+	 * property, which is why the same build behaved correctly there.
+	 *
+	 * A portal puts the screen at the top of the document on every platform, so
+	 * no ancestor's scrolling, stacking or transforms can reach it.
+	 */
+	return createPortal(
 		<div
 			ref={frameRef}
 			className={cn(
@@ -212,6 +229,7 @@ export const Screen = ({ open, onClose, title, subtitle, children, footer }: Pro
 					<div className="safe-bottom pb-10" />
 				</div>
 			</div>
-		</div>
+		</div>,
+		document.body,
 	);
 };
