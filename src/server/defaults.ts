@@ -170,49 +170,6 @@ export const SEED_ROUTINES: SeedRoutine[] = [
 	},
 ];
 
-export type SeedFood = {
-	name: string;
-	emoji: string;
-	servingLabel: string;
-	calories: number;
-	proteinG: number;
-	carbsG: number;
-	fatG: number;
-	category: string;
-	favorite?: boolean;
-};
-
-/**
- * Approximate values for common everyday foods — good enough to steer a
- * deficit, not a lab measurement. Every number is editable in the app.
- */
-export const SEED_FOODS: SeedFood[] = [
-	{ name: "Roti (whole wheat)", emoji: "🫓", servingLabel: "1 roti", calories: 105, proteinG: 3, carbsG: 20, fatG: 2, category: "Lunch", favorite: true },
-	{ name: "Cooked Rice", emoji: "🍚", servingLabel: "1 katori (150g)", calories: 200, proteinG: 4, carbsG: 44, fatG: 0.5, category: "Lunch", favorite: true },
-	{ name: "Dal (cooked)", emoji: "🍲", servingLabel: "1 katori", calories: 150, proteinG: 9, carbsG: 20, fatG: 4, category: "Lunch", favorite: true },
-	{ name: "Rajma / Chole", emoji: "🫘", servingLabel: "1 katori", calories: 210, proteinG: 11, carbsG: 30, fatG: 5, category: "Lunch" },
-	{ name: "Mixed Vegetable Sabzi", emoji: "🥘", servingLabel: "1 katori", calories: 120, proteinG: 3, carbsG: 12, fatG: 7, category: "Lunch" },
-	{ name: "Paneer (100g)", emoji: "🧀", servingLabel: "100 g", calories: 265, proteinG: 18, carbsG: 3, fatG: 20, category: "Protein", favorite: true },
-	{ name: "Boiled Egg", emoji: "🥚", servingLabel: "1 egg", calories: 78, proteinG: 6, carbsG: 0.6, fatG: 5, category: "Protein", favorite: true },
-	{ name: "Chicken Breast (100g)", emoji: "🍗", servingLabel: "100 g", calories: 165, proteinG: 31, carbsG: 0, fatG: 3.6, category: "Protein", favorite: true },
-	{ name: "Whey Protein Scoop", emoji: "🥤", servingLabel: "1 scoop", calories: 120, proteinG: 24, carbsG: 3, fatG: 1.5, category: "Protein", favorite: true },
-	{ name: "Curd / Dahi", emoji: "🥛", servingLabel: "1 katori", calories: 100, proteinG: 5, carbsG: 8, fatG: 5, category: "Snack" },
-	{ name: "Milk (full fat)", emoji: "🥛", servingLabel: "1 glass (250ml)", calories: 150, proteinG: 8, carbsG: 12, fatG: 8, category: "Drink" },
-	{ name: "Poha", emoji: "🍛", servingLabel: "1 plate", calories: 250, proteinG: 5, carbsG: 45, fatG: 6, category: "Breakfast" },
-	{ name: "Idli", emoji: "⚪", servingLabel: "2 pieces", calories: 120, proteinG: 4, carbsG: 25, fatG: 0.5, category: "Breakfast" },
-	{ name: "Dosa (plain)", emoji: "🥞", servingLabel: "1 dosa", calories: 165, proteinG: 4, carbsG: 28, fatG: 4, category: "Breakfast" },
-	{ name: "Oats (dry 40g)", emoji: "🥣", servingLabel: "40 g dry", calories: 150, proteinG: 5, carbsG: 27, fatG: 3, category: "Breakfast", favorite: true },
-	{ name: "Banana", emoji: "🍌", servingLabel: "1 medium", calories: 105, proteinG: 1.3, carbsG: 27, fatG: 0.4, category: "Snack", favorite: true },
-	{ name: "Apple", emoji: "🍎", servingLabel: "1 medium", calories: 95, proteinG: 0.5, carbsG: 25, fatG: 0.3, category: "Snack" },
-	{ name: "Almonds", emoji: "🌰", servingLabel: "10 pieces", calories: 70, proteinG: 2.6, carbsG: 2.5, fatG: 6, category: "Snack" },
-	{ name: "Peanut Butter", emoji: "🥜", servingLabel: "1 tbsp", calories: 95, proteinG: 4, carbsG: 3, fatG: 8, category: "Snack" },
-	{ name: "Tea with Milk & Sugar", emoji: "☕", servingLabel: "1 cup", calories: 90, proteinG: 2, carbsG: 12, fatG: 3, category: "Drink" },
-	{ name: "Black Coffee", emoji: "☕", servingLabel: "1 cup", calories: 5, proteinG: 0.3, carbsG: 0, fatG: 0, category: "Drink" },
-	{ name: "Samosa", emoji: "🥟", servingLabel: "1 piece", calories: 260, proteinG: 4, carbsG: 30, fatG: 14, category: "Snack" },
-	{ name: "Ghee", emoji: "🧈", servingLabel: "1 tsp", calories: 45, proteinG: 0, carbsG: 0, fatG: 5, category: "Other" },
-	{ name: "Cooking Oil", emoji: "🫒", servingLabel: "1 tbsp", calories: 120, proteinG: 0, carbsG: 0, fatG: 14, category: "Other" },
-];
-
 export type SeedCareStep = {
 	name: string;
 	emoji: string;

@@ -1,17 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/prisma/connection";
-import {
-	SEED_CARE_STEPS,
-	SEED_EXERCISES,
-	SEED_FOODS,
-	SEED_ROUTINES,
-	youtubeSearchUrl,
-} from "./defaults";
+import { SEED_CARE_STEPS, SEED_EXERCISES, SEED_ROUTINES, youtubeSearchUrl } from "./defaults";
 
 /**
- * Fills a brand-new account with a starter library so the app is never a
- * blank slate. Guarded by `User.seeded`, so it runs exactly once and is
- * safe to call on every request.
+ * Gives a brand-new account a starter workout plan and care routine, so the
+ * app is never a blank slate. Guarded by `User.seeded`, so it runs exactly
+ * once and is safe to call on every request.
+ *
+ * The macros library is deliberately NOT seeded: those numbers only mean
+ * something if they describe what you actually eat, in your own portions.
  *
  * Everything is written in a handful of `createMany` batches rather than
  * row-by-row: against a remote database the per-row round trips alone were
@@ -87,10 +84,6 @@ export const seedUser = async (userId: string): Promise<void> => {
 			await tx.routine.createMany({ data: routines });
 			await tx.routineItem.createMany({ data: routineItems });
 			await tx.scheduleSlot.createMany({ data: slots, skipDuplicates: true });
-			await tx.food.createMany({
-				data: SEED_FOODS.map((food) => ({ userId, ...food })),
-				skipDuplicates: true,
-			});
 			await tx.careStep.createMany({
 				data: SEED_CARE_STEPS.map((step, position) => ({
 					userId,

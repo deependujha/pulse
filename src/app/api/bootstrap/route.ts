@@ -11,7 +11,7 @@ import { seedUser } from "@/server/seed";
 export const GET = withUser(async (user) => {
 	await seedUser(user.id);
 
-	const [profile, exercises, routines, slots, foods, careSteps] = await Promise.all([
+	const [profile, exercises, routines, slots, library, careSteps] = await Promise.all([
 		prisma.user.findUnique({ where: { id: user.id }, select: PROFILE_SELECT }),
 		prisma.exercise.findMany({
 			where: { userId: user.id, archived: false },
@@ -23,7 +23,7 @@ export const GET = withUser(async (user) => {
 			include: { items: { orderBy: { position: "asc" }, include: { exercise: true } } },
 		}),
 		prisma.scheduleSlot.findMany({ where: { userId: user.id }, orderBy: { weekday: "asc" } }),
-		prisma.food.findMany({
+		prisma.libraryItem.findMany({
 			where: { userId: user.id, archived: false },
 			orderBy: [{ favorite: "desc" }, { name: "asc" }],
 		}),
@@ -38,5 +38,5 @@ export const GET = withUser(async (user) => {
 		routineId: slots.find((s) => s.weekday === weekday)?.routineId ?? null,
 	}));
 
-	return NextResponse.json({ profile, exercises, routines, schedule, foods, careSteps });
+	return NextResponse.json({ profile, exercises, routines, schedule, library, careSteps });
 });

@@ -4,7 +4,7 @@ import { FiActivity, FiBarChart2, FiDroplet, FiHome, FiPieChart } from "react-ic
 import { TodayTab } from "@/components/navigation_tabs/today/today_tab";
 import { CareTab } from "./care/care_tab";
 import { InsightsTab } from "./insights/insights_tab";
-import { NutritionTab } from "./nutrition/nutrition_tab";
+import { MacrosTab } from "./macros/macros_tab";
 import { WorkoutTab } from "./workout/workout_tab";
 
 export type TabProps = {
@@ -31,10 +31,10 @@ export const TrackerTabMap = {
 		label: "Workout",
 		accent: "var(--accent-workout)",
 	},
-	nutrition: {
-		component: NutritionTab,
+	macros: {
+		component: MacrosTab,
 		icon: FiPieChart,
-		label: "Food",
+		label: "Macros",
 		accent: "var(--accent-food)",
 	},
 	care: { component: CareTab, icon: FiDroplet, label: "Care", accent: "var(--accent-care)" },

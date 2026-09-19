@@ -4,31 +4,34 @@ import { useMemo, useState } from "react";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
 import { toast } from "sonner";
 import { DateStrip } from "@/components/common/date-strip";
-import { EmptyState, SectionTitle, Spinner } from "@/components/common/bits";
+import { GhostButton, SectionTitle, Spinner } from "@/components/common/bits";
 import { Ring } from "@/components/common/ring";
-import { AddFoodSheet } from "./add_food_sheet";
+import { ItemEditor } from "./item_editor";
+import { LogSheet } from "./log_sheet";
 import { api, refreshAll, useResource } from "@/lib/api";
-import { MEAL_TYPES, type Bootstrap, type MealEntry, type MealType } from "@/lib/types";
+import { MEAL_TYPES, type Bootstrap, type LibraryItem, type MealEntry, type MealType } from "@/lib/types";
 import type { TabProps } from "@/components/navigation_tabs/tracker_map";
 
-type MealsResponse = { date: string; entries: MealEntry[] };
+type MealsResponse = { date: string; entries: MealEntry[]; recentItemIds: string[] };
 
-export const NutritionTab = ({ date, onDateChange }: TabProps) => {
+export const MacrosTab = ({ date, onDateChange }: TabProps) => {
 	const mealsKey = `/api/meals?date=${date}`;
 	const meals = useResource<MealsResponse>(mealsKey);
 	const bootstrap = useResource<Bootstrap>("/api/bootstrap");
 
-	const [addOpen, setAddOpen] = useState(false);
-	const [addMeal, setAddMeal] = useState<MealType>(suggestedMeal());
+	const [logOpen, setLogOpen] = useState(false);
+	const [logMeal, setLogMeal] = useState<MealType>(suggestedMeal());
+	const [editorOpen, setEditorOpen] = useState(false);
 
-	const entries = meals.data?.entries;
+	const entries = useMemo(() => meals.data?.entries ?? [], [meals.data]);
+	const library = useMemo(() => bootstrap.data?.library ?? [], [bootstrap.data]);
 	const profile = bootstrap.data?.profile;
 	const calorieTarget = profile?.calorieTarget ?? 2000;
 	const proteinTarget = profile?.proteinTarget ?? 120;
 
 	const totals = useMemo(
 		() =>
-			(entries ?? []).reduce(
+			entries.reduce(
 				(acc, entry) => ({
 					calories: acc.calories + entry.calories,
 					proteinG: acc.proteinG + entry.proteinG,
@@ -40,13 +43,21 @@ export const NutritionTab = ({ date, onDateChange }: TabProps) => {
 		[entries],
 	);
 
-	const remaining = calorieTarget - totals.calories;
-	const favorites = (bootstrap.data?.foods ?? []).filter((food) => food.favorite).slice(0, 8);
+	// Recency comes back as ids so it always reflects the item's current numbers,
+	// and anything archived simply stops resolving.
+	const recent = useMemo(() => {
+		const byId = new Map(library.map((item) => [item.id, item]));
+		return (meals.data?.recentItemIds ?? [])
+			.map((id) => byId.get(id))
+			.filter((item): item is LibraryItem => item !== undefined);
+	}, [library, meals.data]);
 
-	const quickLog = async (foodId: string, name: string) => {
+	const remaining = calorieTarget - totals.calories;
+
+	const quickLog = async (item: LibraryItem) => {
 		try {
-			await api.post("/api/meals", { date, foodId, meal: suggestedMeal(), servings: 1 });
-			toast.success(`${name} logged`);
+			await api.post("/api/meals", { date, itemId: item.id, meal: suggestedMeal(), servings: 1 });
+			toast.success(`${item.emoji} ${item.name} · ${item.calories} kcal`);
 			await refreshAll(mealsKey, "/api/insights");
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : "Could not log that");
@@ -62,9 +73,9 @@ export const NutritionTab = ({ date, onDateChange }: TabProps) => {
 		}
 	};
 
-	const openAdd = (meal: MealType) => {
-		setAddMeal(meal);
-		setAddOpen(true);
+	const openLog = (meal: MealType) => {
+		setLogMeal(meal);
+		setLogOpen(true);
 	};
 
 	return (
@@ -72,7 +83,7 @@ export const NutritionTab = ({ date, onDateChange }: TabProps) => {
 			<DateStrip value={date} onChange={onDateChange} />
 
 			{meals.loading ? (
-				<Spinner label="Loading what you ate" />
+				<Spinner label="Loading your day" />
 			) : (
 				<>
 					<section className="rounded-2xl border border-border bg-card p-4">
@@ -81,7 +92,11 @@ export const NutritionTab = ({ date, onDateChange }: TabProps) => {
 								value={totals.calories}
 								max={calorieTarget}
 								color="var(--accent-food)"
-								label={remaining >= 0 ? `${remaining.toLocaleString()} kcal left` : `${Math.abs(remaining).toLocaleString()} kcal over`}
+								label={
+									remaining >= 0
+										? `${remaining.toLocaleString()} kcal left`
+										: `${Math.abs(remaining).toLocaleString()} kcal over`
+								}
 								caption={`Target ${calorieTarget.toLocaleString()} kcal`}
 								overIsBad
 							/>
@@ -99,31 +114,54 @@ export const NutritionTab = ({ date, onDateChange }: TabProps) => {
 						</div>
 					</section>
 
-					{favorites.length > 0 && (
-						<section>
-							<SectionTitle title="Quick add" caption="One tap, one serving" />
-							<div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-								{favorites.map((food) => (
-									<button
-										key={food.id}
-										type="button"
-										onClick={() => quickLog(food.id, food.name)}
-										className="flex w-24 shrink-0 flex-col items-center gap-1 rounded-2xl border border-border bg-card px-2 py-3 active:scale-95"
-									>
-										<span className="text-2xl">{food.emoji}</span>
-										<span className="line-clamp-2 text-center text-[11px] leading-tight font-medium">
-											{food.name}
-										</span>
-										<span className="text-[10px] text-muted-foreground">{food.calories} kcal</span>
-									</button>
-								))}
-							</div>
+					{/* An empty library is the only thing standing between a new account
+					    and logging anything, so it gets the whole screen's attention. */}
+					{library.length === 0 ? (
+						<section className="space-y-3 rounded-2xl border border-dashed border-border px-4 py-8 text-center">
+							<div className="text-3xl">📖</div>
+							<h3 className="text-sm font-semibold">Start your library</h3>
+							<p className="mx-auto max-w-xs text-xs text-muted-foreground">
+								Nothing is pre-filled here on purpose. Add the things you actually eat, in the
+								portions you actually use — a katori of dal, your scoop of whey — and logging
+								becomes one tap.
+							</p>
+							<GhostButton
+								className="mx-auto flex items-center justify-center gap-2"
+								onClick={() => setEditorOpen(true)}
+							>
+								<FiPlus size={15} />
+								Add your first item
+							</GhostButton>
 						</section>
+					) : (
+						recent.length > 0 && (
+							<section>
+								<SectionTitle title="Again" caption="What you log most often — one tap" />
+								<div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+									{recent.map((item) => (
+										<button
+											key={item.id}
+											type="button"
+											onClick={() => quickLog(item)}
+											className="flex w-24 shrink-0 flex-col items-center gap-1 rounded-2xl border border-border bg-card px-2 py-3 active:scale-95"
+										>
+											<span className="text-2xl">{item.emoji}</span>
+											<span className="line-clamp-2 text-center text-[11px] leading-tight font-medium">
+												{item.name}
+											</span>
+											<span className="text-[10px] text-muted-foreground">
+												{item.calories} kcal
+											</span>
+										</button>
+									))}
+								</div>
+							</section>
+						)
 					)}
 
 					<section className="space-y-3">
 						{MEAL_TYPES.map((meal) => {
-							const mealEntries = (entries ?? []).filter((entry) => entry.meal === meal.id);
+							const mealEntries = entries.filter((entry) => entry.meal === meal.id);
 							const mealCalories = mealEntries.reduce((sum, e) => sum + e.calories, 0);
 
 							return (
@@ -131,15 +169,13 @@ export const NutritionTab = ({ date, onDateChange }: TabProps) => {
 									<div className="flex items-center gap-2">
 										<span className="text-base">{meal.emoji}</span>
 										<h3 className="flex-1 text-sm font-semibold">{meal.label}</h3>
-										{mealCalories > 0 && (
-											<span className="text-xs text-muted-foreground tabular-nums">
-												{mealCalories.toLocaleString()} kcal
-											</span>
-										)}
+										<span className="text-xs text-muted-foreground tabular-nums">
+											{mealCalories > 0 ? `${mealCalories.toLocaleString()} kcal` : "—"}
+										</span>
 										<button
 											type="button"
 											aria-label={`Add to ${meal.label}`}
-											onClick={() => openAdd(meal.id)}
+											onClick={() => openLog(meal.id)}
 											className="grid size-8 place-items-center rounded-lg border border-border text-muted-foreground active:scale-95"
 										>
 											<FiPlus size={15} />
@@ -156,15 +192,13 @@ export const NutritionTab = ({ date, onDateChange }: TabProps) => {
 													<span className="text-base">{entry.emoji}</span>
 													<span className="min-w-0 flex-1">
 														<span className="block truncate text-sm">{entry.name}</span>
-														{entry.servings !== 1 && (
-															<span className="block text-xs text-muted-foreground">
-																{entry.servings} servings
-															</span>
-														)}
+														<span className="block text-xs text-muted-foreground">
+															{entry.servings !== 1 && `${entry.servings} servings · `}
+															{Math.round(entry.proteinG)}p · {Math.round(entry.carbsG)}c ·{" "}
+															{Math.round(entry.fatG)}f
+														</span>
 													</span>
-													<span className="shrink-0 text-sm text-muted-foreground tabular-nums">
-														{entry.calories}
-													</span>
+													<span className="shrink-0 text-sm tabular-nums">{entry.calories}</span>
 													<button
 														type="button"
 														aria-label={`Remove ${entry.name}`}
@@ -181,25 +215,19 @@ export const NutritionTab = ({ date, onDateChange }: TabProps) => {
 							);
 						})}
 					</section>
-
-					{(entries ?? []).length === 0 && (
-						<EmptyState
-							emoji="🍽️"
-							title="Nothing logged yet"
-							body="Tap a quick-add tile, or use the + on any meal."
-						/>
-					)}
 				</>
 			)}
 
-			<AddFoodSheet
-				open={addOpen}
-				onClose={() => setAddOpen(false)}
+			<LogSheet
+				open={logOpen}
+				onClose={() => setLogOpen(false)}
 				date={date}
-				foods={bootstrap.data?.foods ?? []}
-				defaultMeal={addMeal}
+				library={library}
+				defaultMeal={logMeal}
 				onLogged={() => refreshAll(mealsKey, "/api/insights")}
 			/>
+
+			<ItemEditor open={editorOpen} onClose={() => setEditorOpen(false)} item={null} />
 		</div>
 	);
 };

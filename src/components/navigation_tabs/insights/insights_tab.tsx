@@ -7,7 +7,7 @@ import {
 	CaloriesChart,
 	DeficitChart,
 	MacroChart,
-	TopFoodsChart,
+	TopItemsChart,
 	VolumeChart,
 	WeightChart,
 } from "@/components/charts/insight-charts";
@@ -46,7 +46,7 @@ export const InsightsTab = () => {
 				<EmptyState
 					emoji="📊"
 					title="Not enough history yet"
-					body="Log a few days of food and training and the charts will fill in."
+					body="Log a few days of meals and training and the charts will fill in."
 				/>
 			) : (
 				<div className="space-y-4" style={{ opacity: insights.loading ? 0.6 : 1 }}>
@@ -98,11 +98,11 @@ export const InsightsTab = () => {
 						/>
 					</section>
 
-					<SectionTitle title="Nutrition" caption="Where the deficit actually comes from" />
+					<SectionTitle title="Macros" caption="Where the deficit actually comes from" />
 					<CaloriesChart series={data.series} target={data.calorieTarget} />
 					<DeficitChart data={data.deficitSeries} />
 					<MacroChart series={data.series} />
-					<TopFoodsChart foods={data.topFoods} />
+					<TopItemsChart items={data.topItems} />
 
 					<SectionTitle title="Body & training" />
 					<WeightChart series={data.series} goalWeightKg={data.goalWeightKg} />

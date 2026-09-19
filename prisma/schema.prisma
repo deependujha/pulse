@@ -51,7 +51,7 @@ model User {
   routines     Routine[]
   schedule     ScheduleSlot[]
   setLogs      SetLog[]
-  foods        Food[]
+  library      LibraryItem[]
   meals        MealEntry[]
   careSteps    CareStep[]
   careLogs     CareLog[]
@@ -178,8 +178,13 @@ model SetLog {
  * =========================
  */
 
-/// A saved food the user can tap to log. Calories are per serving.
-model Food {
+/// An item in the user's own library, built up by hand — nothing is seeded.
+/// Calories and macros are per one serving.
+///
+/// The table is still called "Food" from the app's first draft; renaming the
+/// model without renaming the table keeps the code honest at zero migration
+/// risk. Same reason `MealEntry.itemId` maps to the old `foodId` column.
+model LibraryItem {
   id     String @id @default(cuid())
   userId String
 
@@ -202,6 +207,7 @@ model Food {
 
   @@unique([userId, name])
   @@index([userId, archived])
+  @@map("Food")
 }
 
 /// Something eaten on a given day. foodId is null for one-off custom entries.
@@ -210,7 +216,7 @@ model MealEntry {
   userId String
   date   String // YYYY-MM-DD
 
-  foodId String?
+  itemId String? @map("foodId")
   name   String
   emoji  String  @default("🍽️")
 
@@ -224,8 +230,8 @@ model MealEntry {
 
   createdAt DateTime @default(now())
 
-  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  food Food? @relation(fields: [foodId], references: [id], onDelete: SetNull)
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item LibraryItem? @relation(fields: [itemId], references: [id], onDelete: SetNull)
 
   @@index([userId, date])
 }

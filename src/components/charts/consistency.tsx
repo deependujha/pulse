@@ -15,8 +15,8 @@ type Row = {
 
 const ROWS: Row[] = [
 	{
-		key: "food",
-		label: "Food",
+		key: "macros",
+		label: "Macros",
 		ratio: (d) => (d.meals > 0 ? 1 : 0),
 		detail: (d) => (d.meals > 0 ? `${d.meals} items · ${d.calories} kcal` : "Nothing logged"),
 	},
@@ -59,7 +59,7 @@ export const ConsistencyGrid = ({ series }: { series: InsightDay[] }) => {
 				{ label: "Complete", color: "var(--heat-3)" },
 			]}
 			table={{
-				columns: ["Date", "Food", "Training", "Care"],
+				columns: ["Date", "Macros", "Training", "Care"],
 				rows: series.map((d) => [
 					`${fromDayKey(d.date).getDate()}/${fromDayKey(d.date).getMonth() + 1}`,
 					d.meals > 0 ? "yes" : "no",

@@ -15,7 +15,7 @@ export const TrackerPage = () => {
 	const [activeTab, setActiveTab] = useState<TabId>("today");
 	const [showProfile, setShowProfile] = useState(false);
 
-	// One selected day for the whole app: switch to yesterday in Food and Care
+	// One selected day for the whole app: switch to yesterday in Macros and Care
 	// stays on yesterday too.
 	const [date, setDate] = useState(todayKey());
 

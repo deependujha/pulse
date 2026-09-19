@@ -6,11 +6,11 @@ type Ctx = { params: Promise<{ id: string }> };
 
 export const PATCH = withUser<Ctx>(async (user, req, ctx) => {
 	const { id } = await ctx.params;
-	const owned = await prisma.food.findFirst({ where: { id, userId: user.id } });
-	if (!owned) return notFound("Food not found");
+	const owned = await prisma.libraryItem.findFirst({ where: { id, userId: user.id } });
+	if (!owned) return notFound("Not in your library");
 
 	const body = await readJson(req);
-	const food = await prisma.food.update({
+	const item = await prisma.libraryItem.update({
 		where: { id },
 		data: {
 			name: "name" in body ? str(body.name, owned.name) || owned.name : undefined,
@@ -24,19 +24,18 @@ export const PATCH = withUser<Ctx>(async (user, req, ctx) => {
 			proteinG: "proteinG" in body ? Math.max(0, num(body.proteinG, owned.proteinG)) : undefined,
 			carbsG: "carbsG" in body ? Math.max(0, num(body.carbsG, owned.carbsG)) : undefined,
 			fatG: "fatG" in body ? Math.max(0, num(body.fatG, owned.fatG)) : undefined,
-			category: "category" in body ? str(body.category, owned.category) : undefined,
 			favorite: "favorite" in body ? bool(body.favorite, owned.favorite) : undefined,
 		},
 	});
-	return NextResponse.json({ food });
+	return NextResponse.json({ item });
 });
 
 export const DELETE = withUser<Ctx>(async (user, _req, ctx) => {
 	const { id } = await ctx.params;
-	const owned = await prisma.food.findFirst({ where: { id, userId: user.id } });
-	if (!owned) return notFound("Food not found");
+	const owned = await prisma.libraryItem.findFirst({ where: { id, userId: user.id } });
+	if (!owned) return notFound("Not in your library");
 
-	// Archived, not deleted — already-logged meals keep their link.
-	await prisma.food.update({ where: { id }, data: { archived: true } });
+	// Archived, not deleted — already-logged entries keep their link.
+	await prisma.libraryItem.update({ where: { id }, data: { archived: true } });
 	return NextResponse.json({ ok: true });
 });

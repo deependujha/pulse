@@ -103,7 +103,7 @@ export const ProfileTab = () => {
 				<dl className="space-y-1.5 rounded-2xl border border-border bg-card p-4 text-sm">
 					<Row label="Workouts" value={`${bootstrap.data?.routines.length ?? 0}`} />
 					<Row label="Exercises" value={`${bootstrap.data?.exercises.length ?? 0}`} />
-					<Row label="Saved foods" value={`${bootstrap.data?.foods.length ?? 0}`} />
+					<Row label="Library items" value={`${bootstrap.data?.library.length ?? 0}`} />
 					<Row label="Care steps" value={`${bootstrap.data?.careSteps.length ?? 0}`} />
 					{profile && (
 						<Row

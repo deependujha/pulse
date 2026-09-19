@@ -3,24 +3,52 @@ import { prisma } from "@/prisma/connection";
 import { isValidDayKey, todayKey } from "@/lib/dates";
 import { badRequest, notFound, num, readJson, str, withUser } from "@/server/http";
 
-const MEALS = ["breakfast", "lunch", "dinner", "snack"];
+const MEALS = ["breakfast", "lunch", "snack", "dinner"];
+
+/** How many distinct library items the "recent" strip offers. */
+const RECENT_COUNT = 8;
+
+/** How far back to look for those distinct items. */
+const RECENT_SCAN = 120;
 
 export const GET = withUser(async (user, req) => {
 	const url = new URL(req.url);
 	const date = url.searchParams.get("date") ?? todayKey();
 	if (!isValidDayKey(date)) return badRequest("date must be YYYY-MM-DD");
 
-	const entries = await prisma.mealEntry.findMany({
-		where: { userId: user.id, date },
-		orderBy: { createdAt: "asc" },
-	});
-	return NextResponse.json({ date, entries });
+	const [entries, recent] = await Promise.all([
+		prisma.mealEntry.findMany({
+			where: { userId: user.id, date },
+			orderBy: { createdAt: "asc" },
+		}),
+		// Only the ids: the client already holds the library from /api/bootstrap,
+		// so resolving them there keeps this cheap and drops archived items for free.
+		//
+		// Deduplication happens here rather than via Prisma's `distinct`, because
+		// `distinct` combined with `take` can apply the limit before collapsing
+		// duplicates — log the same thing eight times and the strip would show one
+		// item. Scanning a fixed window and deduping is predictable instead.
+		prisma.mealEntry.findMany({
+			where: { userId: user.id, itemId: { not: null } },
+			orderBy: { createdAt: "desc" },
+			select: { itemId: true },
+			take: RECENT_SCAN,
+		}),
+	]);
+
+	const seen = new Set<string>();
+	for (const row of recent) {
+		if (row.itemId) seen.add(row.itemId);
+		if (seen.size >= RECENT_COUNT) break;
+	}
+
+	return NextResponse.json({ date, entries, recentItemIds: [...seen] });
 });
 
 /**
- * Log something eaten. Either reference a saved food (`foodId`, scaled by
- * `servings`) or pass a one-off `name` + `calories` for anything not worth
- * saving to the library.
+ * Log something eaten. Either reference a library item (`itemId`, scaled by
+ * `servings`) or pass a one-off `name` + `calories` for anything you'll never
+ * log twice.
  */
 export const POST = withUser(async (user, req) => {
 	const body = await readJson(req);
@@ -29,7 +57,7 @@ export const POST = withUser(async (user, req) => {
 
 	const meal = MEALS.includes(str(body.meal)) ? str(body.meal) : "snack";
 	const servings = Math.max(0.05, num(body.servings, 1));
-	const foodId = str(body.foodId) || null;
+	const itemId = str(body.itemId) || null;
 
 	let payload: {
 		name: string;
@@ -40,16 +68,16 @@ export const POST = withUser(async (user, req) => {
 		fatG: number;
 	};
 
-	if (foodId) {
-		const food = await prisma.food.findFirst({ where: { id: foodId, userId: user.id } });
-		if (!food) return notFound("Food not found");
+	if (itemId) {
+		const item = await prisma.libraryItem.findFirst({ where: { id: itemId, userId: user.id } });
+		if (!item) return notFound("Not in your library");
 		payload = {
-			name: food.name,
-			emoji: food.emoji,
-			calories: Math.round(food.calories * servings),
-			proteinG: round1(food.proteinG * servings),
-			carbsG: round1(food.carbsG * servings),
-			fatG: round1(food.fatG * servings),
+			name: item.name,
+			emoji: item.emoji,
+			calories: Math.round(item.calories * servings),
+			proteinG: round1(item.proteinG * servings),
+			carbsG: round1(item.carbsG * servings),
+			fatG: round1(item.fatG * servings),
 		};
 	} else {
 		const name = str(body.name);
@@ -67,27 +95,28 @@ export const POST = withUser(async (user, req) => {
 	}
 
 	const entry = await prisma.mealEntry.create({
-		data: { userId: user.id, date, foodId, meal, servings, ...payload },
+		data: { userId: user.id, date, itemId, meal, servings, ...payload },
 	});
 
-	// Optionally promote a one-off into the saved library in the same tap.
-	if (!foodId && body.saveToLibrary === true) {
+	// Optionally promote a one-off into the library in the same tap.
+	if (!itemId && body.saveToLibrary === true) {
 		const name = payload.name;
-		const exists = await prisma.food.findUnique({
+		const exists = await prisma.libraryItem.findUnique({
 			where: { userId_name: { userId: user.id, name } },
 		});
 		if (!exists) {
-			await prisma.food.create({
+			await prisma.libraryItem.create({
 				data: {
 					userId: user.id,
 					name,
 					emoji: payload.emoji,
 					servingLabel: str(body.servingLabel, "1 serving") || "1 serving",
+					// The library stores per-serving values, so use what was typed
+					// rather than the already-scaled numbers on the entry.
 					calories: Math.round(num(body.calories, payload.calories)),
 					proteinG: Math.max(0, num(body.proteinG, 0)),
 					carbsG: Math.max(0, num(body.carbsG, 0)),
 					fatG: Math.max(0, num(body.fatG, 0)),
-					category: str(body.category, "Other") || "Other",
 				},
 			});
 		}

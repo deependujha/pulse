@@ -335,7 +335,7 @@ export const TodayTab = ({ date, onNavigate }: TabProps) => {
 				</div>
 			</section>
 
-			<GhostButton className="w-full" onClick={() => onNavigate("nutrition")}>
+			<GhostButton className="w-full" onClick={() => onNavigate("macros")}>
 				Log what you ate
 			</GhostButton>
 

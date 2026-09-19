@@ -419,36 +419,36 @@ export const VolumeChart = ({ series }: { series: InsightDay[] }) => (
 	</ChartFrame>
 );
 
-/* ---------- Top foods ---------- */
+/* ---------- Biggest contributors ---------- */
 
-export const TopFoodsChart = ({ foods }: { foods: Insights["topFoods"] }) => (
+export const TopItemsChart = ({ items }: { items: Insights["topItems"] }) => (
 	<ChartFrame
 		title="Where the calories came from"
 		caption="Total contribution over the range"
 		table={{
-			columns: ["Food", "Times", "Calories"],
-			rows: foods.map((f) => [f.name, f.count, f.calories]),
+			columns: ["Item", "Times", "Calories"],
+			rows: items.map((f) => [f.name, f.count, f.calories]),
 		}}
 	>
-		{foods.length === 0 ? (
+		{items.length === 0 ? (
 			<p className="py-10 text-center text-sm text-muted-foreground">Nothing logged yet.</p>
 		) : (
 			<ul className="space-y-2.5">
-				{foods.map((food) => {
-					const max = foods[0].calories || 1;
+				{items.map((item) => {
+					const max = items[0].calories || 1;
 					return (
-						<li key={food.name}>
+						<li key={item.name}>
 							<div className="flex items-baseline justify-between gap-3 text-sm">
-								<span className="truncate">{food.name}</span>
+								<span className="truncate">{item.name}</span>
 								<span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-									{food.calories.toLocaleString()} kcal · {food.count}×
+									{item.calories.toLocaleString()} kcal · {item.count}×
 								</span>
 							</div>
 							<div className="mt-1 h-2 overflow-hidden rounded-full bg-secondary">
 								<div
 									className="h-full rounded-full"
 									style={{
-										width: `${Math.max(3, (food.calories / max) * 100)}%`,
+										width: `${Math.max(3, (item.calories / max) * 100)}%`,
 										backgroundColor: "var(--viz-1)",
 									}}
 								/>

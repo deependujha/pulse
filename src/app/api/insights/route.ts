@@ -147,15 +147,15 @@ export const GET = withUser(async (user, req) => {
 	const weights = series.filter((d) => d.weightKg !== null);
 	const workoutDays = series.filter((d) => d.sets > 0).length;
 
-	// Most-eaten foods over the window — useful for spotting the real drivers.
-	const foodCounts = new Map<string, { name: string; count: number; calories: number }>();
+	// Biggest contributors over the window — the real drivers of the total.
+	const itemCounts = new Map<string, { name: string; count: number; calories: number }>();
 	for (const m of meals) {
-		const prev = foodCounts.get(m.name) ?? { name: m.name, count: 0, calories: 0 };
+		const prev = itemCounts.get(m.name) ?? { name: m.name, count: 0, calories: 0 };
 		prev.count += 1;
 		prev.calories += m.calories;
-		foodCounts.set(m.name, prev);
+		itemCounts.set(m.name, prev);
 	}
-	const topFoods = [...foodCounts.values()].sort((a, b) => b.calories - a.calories).slice(0, 6);
+	const topItems = [...itemCounts.values()].sort((a, b) => b.calories - a.calories).slice(0, 6);
 
 	const exerciseCounts = new Map<string, number>();
 	for (const s of sets) {
@@ -197,7 +197,7 @@ export const GET = withUser(async (user, req) => {
 			careStreak: streak(series, (d) => d.careTotal > 0 && d.careDone >= d.careTotal),
 			logStreak: streak(series, (d) => d.meals > 0),
 		},
-		topFoods,
+		topItems,
 		topExercises,
 	});
 });

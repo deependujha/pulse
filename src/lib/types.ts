@@ -61,7 +61,8 @@ export type SetLog = {
 	weightKg: number | null;
 };
 
-export type Food = {
+/** Something you've defined once and can log again. Values are per serving. */
+export type LibraryItem = {
 	id: string;
 	name: string;
 	emoji: string;
@@ -70,7 +71,6 @@ export type Food = {
 	proteinG: number;
 	carbsG: number;
 	fatG: number;
-	category: string;
 	favorite: boolean;
 };
 
@@ -79,7 +79,7 @@ export type MealType = "breakfast" | "lunch" | "dinner" | "snack";
 export type MealEntry = {
 	id: string;
 	date: string;
-	foodId: string | null;
+	itemId: string | null;
 	name: string;
 	emoji: string;
 	meal: MealType;
@@ -116,7 +116,7 @@ export type Bootstrap = {
 	exercises: Exercise[];
 	routines: Routine[];
 	schedule: ScheduleSlot[];
-	foods: Food[];
+	library: LibraryItem[];
 	careSteps: CareStep[];
 };
 
@@ -171,7 +171,7 @@ export type Insights = {
 		careStreak: number;
 		logStreak: number;
 	};
-	topFoods: { name: string; count: number; calories: number }[];
+	topItems: { name: string; count: number; calories: number }[];
 	topExercises: { name: string; sets: number }[];
 };
 
@@ -187,19 +187,9 @@ export const MUSCLE_GROUPS = [
 	"Other",
 ] as const;
 
-export const FOOD_CATEGORIES = [
-	"Breakfast",
-	"Lunch",
-	"Dinner",
-	"Snack",
-	"Drink",
-	"Protein",
-	"Other",
-] as const;
-
 export const MEAL_TYPES: { id: MealType; label: string; emoji: string }[] = [
 	{ id: "breakfast", label: "Breakfast", emoji: "🌅" },
 	{ id: "lunch", label: "Lunch", emoji: "🍲" },
-	{ id: "dinner", label: "Dinner", emoji: "🌙" },
 	{ id: "snack", label: "Snack", emoji: "🍿" },
+	{ id: "dinner", label: "Dinner", emoji: "🌙" },
 ];
