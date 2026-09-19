@@ -40,7 +40,7 @@ export const TrackerPage = () => {
 							<div
 								className={cn(
 									"truncate text-xs",
-									isToday ? "text-muted-foreground" : "font-medium text-[var(--warning)]",
+									isToday ? "text-muted-foreground" : "font-medium text-warning",
 								)}
 							>
 								{isToday ? formatShort(date) : formatRelative(date)}

@@ -9,7 +9,7 @@ export default function Home() {
 
 	if (status === "loading") {
 		return (
-			<div className="flex min-h-[100dvh] items-center justify-center bg-background">
+			<div className="flex min-h-dvh items-center justify-center bg-background">
 				<img src="/logo.svg" alt="pulse" className="size-12 animate-pulse opacity-60" />
 			</div>
 		);
