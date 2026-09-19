@@ -85,7 +85,7 @@ export const TrackerPage = () => {
 
 			<nav
 				aria-label="Sections"
-				className="glass safe-bottom z-30 shrink-0 border-t border-border"
+				className="glass z-30 shrink-0 border-t border-border pb-3"
 			>
 				<div className="mx-auto flex w-full max-w-lg items-stretch justify-around px-2 pt-1.5 pb-1.5">
 					{TAB_IDS.map((tab) => {
