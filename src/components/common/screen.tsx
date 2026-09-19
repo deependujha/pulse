@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { FiChevronLeft } from "react-icons/fi";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,12 @@ type Props = {
 	subtitle?: string;
 	children: React.ReactNode;
 	footer?: React.ReactNode;
+	/**
+	 * Chrome that stays put while `children` scroll under it -- a search field,
+	 * an add button, a pane switcher. It is laid over the scrolling pane rather
+	 * than sticky inside it; see where it is rendered for why.
+	 */
+	toolbar?: React.ReactNode;
 };
 
 /**
@@ -33,9 +39,34 @@ type Props = {
  * never cover it, and opening pushes a history entry so Back — hardware,
  * gesture or browser — closes the screen instead of leaving the app.
  */
-export const Screen = ({ open, onClose, title, subtitle, children, footer }: Props) => {
+export const Screen = ({
+	open,
+	onClose,
+	title,
+	subtitle,
+	children,
+	footer,
+	toolbar,
+}: Props) => {
 	const frameRef = useRef<HTMLDivElement>(null);
 	const id = useId();
+
+	/*
+	 * The toolbar is out of flow, so the pane below it has to be inset by however
+	 * tall it happens to be -- which changes as its contents do (a pane switch, a
+	 * search field that only appears past a certain number of rows).
+	 *
+	 * Measuring in the ref callback rather than an effect means the first painted
+	 * frame is already inset, so the list never flashes up underneath the bar.
+	 */
+	const [toolbarHeight, setToolbarHeight] = useState(0);
+	const measureToolbar = useCallback((node: HTMLDivElement | null) => {
+		if (!node) return;
+		setToolbarHeight(node.offsetHeight);
+		const observer = new ResizeObserver(() => setToolbarHeight(node.offsetHeight));
+		observer.observe(node);
+		return () => observer.disconnect();
+	}, []);
 
 	// Call sites pass an inline arrow, so onClose is a new function every
 	// render. Holding it in a ref keeps the effects below keyed on `open` alone.
@@ -219,14 +250,39 @@ export const Screen = ({ open, onClose, title, subtitle, children, footer }: Pro
 					<span aria-hidden="true" className="w-12 shrink-0 sm:hidden" />
 				</div>
 
-				{/* The action scrolls with the content and sits right after it. Pinned
-				    to its own row it landed under the keyboard, or level with the tab
-				    bar, where it was hard to see and harder to hit. */}
-				<div className="scroll-y min-h-0 flex-1 px-4 pt-3 sm:px-5">
-					{children}
-					{footer && <div className="mt-5">{footer}</div>}
-					{/* Run-off past the last element, plus the home-indicator inset. */}
-					<div className="safe-bottom pb-10" />
+				<div className="relative flex min-h-0 flex-1 flex-col">
+					{/*
+					 * Laid over the pane, not sticky inside it: `backdrop-filter` does
+					 * not sample the contents of a `.scroll-y` pane from an element
+					 * within that same pane -- the accelerated-scrolling compositing
+					 * noted above -- so a sticky bar came out unblurred, and merely
+					 * translucent enough for rows to read through the gaps between its
+					 * controls. From outside the scroller the blur resolves properly.
+					 *
+					 * Full-bleed rather than inset, so rows blur edge to edge; the
+					 * padding lines its contents up with them.
+					 */}
+					{toolbar && (
+						<div
+							ref={measureToolbar}
+							className="glass absolute inset-x-0 top-0 z-10 px-4 py-3 sm:px-5"
+						>
+							{toolbar}
+						</div>
+					)}
+
+					{/* The action scrolls with the content and sits right after it. Pinned
+					    to its own row it landed under the keyboard, or level with the tab
+					    bar, where it was hard to see and harder to hit. */}
+					<div
+						className={cn("scroll-y min-h-0 flex-1 px-4 sm:px-5", !toolbar && "pt-3")}
+						style={toolbar ? { paddingTop: toolbarHeight } : undefined}
+					>
+						{children}
+						{footer && <div className="mt-5">{footer}</div>}
+						{/* Run-off past the last element, plus the home-indicator inset. */}
+						<div className="safe-bottom pb-10" />
+					</div>
 				</div>
 			</div>
 		</div>,

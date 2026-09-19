@@ -47,33 +47,23 @@ export const LibraryManager = ({ open, onClose, library }: Props) => {
 
 	return (
 		<>
+			{/* Adding and searching stay put: at the end of a long library you'd
+			    otherwise have to scroll the whole list back up to reach either. */}
 			<Screen
 				open={open}
 				onClose={onClose}
 				title="Macros library"
 				subtitle={`${library.length} ${library.length === 1 ? "item" : "items"}`}
-			>
-				{/* Adding lives at the top: at the end of a long library you'd have to
-				    scroll the whole list to reach it. */}
-				<GhostButton
-					className="mb-3 flex w-full items-center justify-center gap-2"
-					onClick={() => openEditor(null)}
-				>
-					<FiPlus size={16} />
-					New item
-				</GhostButton>
-
-				{library.length === 0 ? (
-					<div className="space-y-3 rounded-2xl border border-dashed border-border px-4 py-10 text-center">
-						<div className="text-3xl">📖</div>
-						<p className="text-sm font-medium">Nothing here yet</p>
-						<p className="mx-auto max-w-xs text-xs text-muted-foreground">
-							Add the things you actually eat, in the portions you actually use. Logging is one
-							tap after that.
-						</p>
-					</div>
-				) : (
+				toolbar={
 					<div className="space-y-3">
+						<GhostButton
+							className="flex w-full items-center justify-center gap-2"
+							onClick={() => openEditor(null)}
+						>
+							<FiPlus size={16} />
+							New item
+						</GhostButton>
+
 						{library.length > 6 && (
 							<div className="relative">
 								<FiSearch
@@ -88,7 +78,20 @@ export const LibraryManager = ({ open, onClose, library }: Props) => {
 								/>
 							</div>
 						)}
-
+					</div>
+				}
+			>
+				{library.length === 0 ? (
+					<div className="space-y-3 rounded-2xl border border-dashed border-border px-4 py-10 text-center">
+						<div className="text-3xl">📖</div>
+						<p className="text-sm font-medium">Nothing here yet</p>
+						<p className="mx-auto max-w-xs text-xs text-muted-foreground">
+							Add the things you actually eat, in the portions you actually use. Logging is one
+							tap after that.
+						</p>
+					</div>
+				) : (
+					<div className="space-y-3">
 						<ul className="space-y-1.5">
 							{matches.map((item) => (
 								<li

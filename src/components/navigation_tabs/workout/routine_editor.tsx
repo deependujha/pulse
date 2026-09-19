@@ -137,7 +137,7 @@ const RoutineForm = ({ open, onClose, routine, exercises }: Props) => {
 				title={routine ? "Edit workout" : "New workout"}
 				subtitle={`${items.length} exercise${items.length === 1 ? "" : "s"}`}
 				footer={
-					<div className="space-y-2">
+					<div className="space-y-2 pb-4">
 						<PrimaryButton onClick={save} disabled={pending}>
 							{pending ? "Saving…" : routine ? "Save changes" : "Create workout"}
 						</PrimaryButton>
@@ -146,7 +146,7 @@ const RoutineForm = ({ open, onClose, routine, exercises }: Props) => {
 								type="button"
 								onClick={remove}
 								disabled={pending}
-								className="h-10 w-full rounded-xl text-sm font-medium text-[var(--critical)] active:scale-[0.99]"
+								className="h-10 w-full rounded-xl text-sm font-medium text-critical active:scale-[0.99]"
 							>
 								Delete workout
 							</button>

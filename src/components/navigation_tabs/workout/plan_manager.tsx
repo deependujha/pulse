@@ -51,19 +51,51 @@ export const PlanManager = ({ open, onClose, routines, exercises, schedule }: Pr
 
 	return (
 		<>
-			<Screen open={open} onClose={onClose} title="Your plan">
-				<div className="sticky top-0 z-10 bg-background pb-3">
-					<SegmentedControl
-						value={pane}
-						onChange={setPane}
-						options={[
-							{ id: "week", label: "Week" },
-							{ id: "workouts", label: "Workouts" },
-							{ id: "library", label: "Library" },
-						]}
-					/>
-				</div>
+			{/* Switching panes and adding both stay put while the list scrolls. */}
+			<Screen
+				open={open}
+				onClose={onClose}
+				title="Your plan"
+				toolbar={
+					<div className="space-y-2">
+						<SegmentedControl
+							value={pane}
+							onChange={setPane}
+							options={[
+								{ id: "week", label: "Week" },
+								{ id: "workouts", label: "Workouts" },
+								{ id: "library", label: "Library" },
+							]}
+						/>
 
+						{pane === "workouts" && (
+							<GhostButton
+								className="flex w-full items-center justify-center gap-2"
+								onClick={() => {
+									setEditingRoutine(null);
+									setRoutineOpen(true);
+								}}
+							>
+								<FiPlus size={15} />
+								New workout
+							</GhostButton>
+						)}
+
+						{pane === "library" && (
+							<GhostButton
+								className="flex w-full items-center justify-center gap-2"
+								onClick={() => {
+									setEditingExercise(null);
+									setExerciseOpen(true);
+								}}
+							>
+								<FiPlus size={15} />
+								New exercise
+							</GhostButton>
+						)}
+					</div>
+				}
+			>
 				{pane === "week" && (
 					<ul className="space-y-2 pb-2">
 						{WEEKDAY_LONG.map((day, weekday) => (
@@ -91,17 +123,6 @@ export const PlanManager = ({ open, onClose, routines, exercises, schedule }: Pr
 
 				{pane === "workouts" && (
 					<div className="space-y-2 pb-2">
-						<GhostButton
-							className="flex w-full items-center justify-center gap-2"
-							onClick={() => {
-								setEditingRoutine(null);
-								setRoutineOpen(true);
-							}}
-						>
-							<FiPlus size={15} />
-							New workout
-						</GhostButton>
-
 						{routines.map((routine) => (
 							<button
 								key={routine.id}
@@ -139,17 +160,6 @@ export const PlanManager = ({ open, onClose, routines, exercises, schedule }: Pr
 
 				{pane === "library" && (
 					<div className="space-y-2 pb-2">
-						<GhostButton
-							className="flex w-full items-center justify-center gap-2"
-							onClick={() => {
-								setEditingExercise(null);
-								setExerciseOpen(true);
-							}}
-						>
-							<FiPlus size={15} />
-							New exercise
-						</GhostButton>
-
 						{exercises.map((exercise) => (
 							<div
 								key={exercise.id}
