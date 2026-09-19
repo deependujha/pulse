@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/prisma/connection";
 import { withUser } from "@/server/http";
+import { PROFILE_SELECT } from "@/server/profile";
 import { seedUser } from "@/server/seed";
 
 /**
@@ -11,20 +12,7 @@ export const GET = withUser(async (user) => {
 	await seedUser(user.id);
 
 	const [profile, exercises, routines, slots, foods, careSteps] = await Promise.all([
-		prisma.user.findUnique({
-			where: { id: user.id },
-			select: {
-				id: true,
-				name: true,
-				email: true,
-				image: true,
-				calorieTarget: true,
-				proteinTarget: true,
-				heightCm: true,
-				goalWeightKg: true,
-				createdAt: true,
-			},
-		}),
+		prisma.user.findUnique({ where: { id: user.id }, select: PROFILE_SELECT }),
 		prisma.exercise.findMany({
 			where: { userId: user.id, archived: false },
 			orderBy: [{ muscleGroup: "asc" }, { name: "asc" }],

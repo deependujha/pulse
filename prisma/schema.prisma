@@ -29,11 +29,20 @@ model User {
   providerId String // Google sub
 
   // Goals / preferences
-  calorieTarget Int     @default(2000)
-  proteinTarget Int     @default(120)
-  heightCm      Float?
-  goalWeightKg  Float?
-  seeded        Boolean @default(false)
+  calorieTarget    Int   @default(2000)
+  proteinTarget    Int   @default(120)
+  waterTargetMl    Int   @default(2500)
+  sleepTargetHours Float @default(8)
+
+  // Body. `currentWeightKg` and `startWeightKg` are denormalised from
+  // DailyMetric so the profile always has them without a second query; they are
+  // recomputed from the metric rows whenever a weigh-in is written.
+  heightCm        Float?
+  currentWeightKg Float?
+  startWeightKg   Float?
+  goalWeightKg    Float?
+
+  seeded Boolean @default(false)
 
   createdAt   DateTime @default(now())
   lastLoginAt DateTime @updatedAt

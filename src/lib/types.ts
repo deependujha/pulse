@@ -7,7 +7,11 @@ export type Profile = {
 	image: string | null;
 	calorieTarget: number;
 	proteinTarget: number;
+	waterTargetMl: number;
+	sleepTargetHours: number;
 	heightCm: number | null;
+	currentWeightKg: number | null;
+	startWeightKg: number | null;
 	goalWeightKg: number | null;
 	createdAt: string;
 };
@@ -142,6 +146,11 @@ export type Insights = {
 	days: number;
 	calorieTarget: number;
 	proteinTarget: number;
+	waterTargetMl: number;
+	sleepTargetHours: number;
+	heightCm: number | null;
+	currentWeightKg: number | null;
+	startWeightKg: number | null;
 	goalWeightKg: number | null;
 	series: InsightDay[];
 	deficitSeries: { date: string; cumulativeDeficit: number; dailyDeficit: number }[];

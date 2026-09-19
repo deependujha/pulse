@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/prisma/connection";
 import { isValidDayKey, todayKey } from "@/lib/dates";
 import { badRequest, num, optionalNum, optionalStr, readJson, str, withUser } from "@/server/http";
+import { syncWeightSnapshot } from "@/server/profile";
 
 export const GET = withUser(async (user, req) => {
 	const url = new URL(req.url);
@@ -51,5 +52,9 @@ export const PUT = withUser(async (user, req) => {
 			note: data.note ?? null,
 		},
 	});
+
+	// Keep the profile's current/start weight in step with the weigh-in history.
+	if ("weightKg" in body) await syncWeightSnapshot(user.id);
+
 	return NextResponse.json({ metric });
 });

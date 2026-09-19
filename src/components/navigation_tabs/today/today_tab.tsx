@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { FiChevronRight, FiDroplet, FiPlus } from "react-icons/fi";
+import { FiChevronRight, FiDroplet, FiMoon, FiPlus } from "react-icons/fi";
 import { toast } from "sonner";
 import { EmptyState, GhostButton, Labelled, PrimaryButton, SectionTitle, Spinner, Stat, TextInput } from "@/components/common/bits";
 import { MiniRing, Ring } from "@/components/common/ring";
@@ -36,10 +36,14 @@ export const TodayTab = ({ date, onNavigate }: TabProps) => {
 	const insights = useResource<Insights>("/api/insights?days=30");
 
 	const [weightOpen, setWeightOpen] = useState(false);
+	const [sleepOpen, setSleepOpen] = useState(false);
 
 	const profile = bootstrap.data?.profile;
 	const calorieTarget = profile?.calorieTarget ?? 2000;
 	const proteinTarget = profile?.proteinTarget ?? 120;
+	const waterTargetMl = profile?.waterTargetMl ?? 2500;
+	const sleepTargetHours = profile?.sleepTargetHours ?? 8;
+	const goalWeightKg = profile?.goalWeightKg ?? null;
 
 	const entries = meals.data?.entries ?? [];
 	const calories = entries.reduce((sum, e) => sum + e.calories, 0);
@@ -56,6 +60,7 @@ export const TodayTab = ({ date, onNavigate }: TabProps) => {
 
 	const metric = metrics.data?.metric;
 	const waterMl = metric?.waterMl ?? 0;
+	const weightKg = metric?.weightKg ?? metrics.data?.lastWeight?.weightKg ?? null;
 	const summary = insights.data?.summary;
 
 	const loading = bootstrap.loading || workout.loading || meals.loading;
@@ -191,69 +196,100 @@ export const TodayTab = ({ date, onNavigate }: TabProps) => {
 			</section>
 
 			<section>
-				<SectionTitle
-					title="Body"
-					caption="Weight and water"
-					action={
-						<button
-							type="button"
-							onClick={() => setWeightOpen(true)}
-							className="flex items-center gap-1 text-sm text-muted-foreground active:scale-95"
-						>
-							<FiPlus size={15} />
-							Weight
-						</button>
-					}
-				/>
+				<SectionTitle title="Body" caption="Weight, sleep and water" />
 
 				<div className="grid grid-cols-2 gap-2">
-					<div className="rounded-2xl border border-border bg-card p-3.5">
-						<div className="text-[11px] tracking-wide text-muted-foreground uppercase">
+					<button
+						type="button"
+						onClick={() => setWeightOpen(true)}
+						className="rounded-2xl border border-border bg-card p-3.5 text-left active:scale-[0.99]"
+					>
+						<div className="flex items-center justify-between text-[11px] tracking-wide text-muted-foreground uppercase">
 							Weight
+							<FiPlus size={13} />
 						</div>
 						<div className="mt-1 text-xl font-semibold">
-							{metric?.weightKg
-								? `${metric.weightKg} kg`
-								: metrics.data?.lastWeight
-									? `${metrics.data.lastWeight.weightKg} kg`
-									: "—"}
+							{weightKg === null ? "—" : `${weightKg} kg`}
 						</div>
 						<div className="mt-0.5 text-xs text-muted-foreground">
 							{metric?.weightKg
-								? "logged today"
+								? goalWeightKg
+									? gapToGoal(metric.weightKg, goalWeightKg)
+									: "logged today"
 								: metrics.data?.lastWeight
 									? `last on ${formatRelative(metrics.data.lastWeight.date)}`
 									: "not logged yet"}
 						</div>
-					</div>
+					</button>
 
-					<div className="rounded-2xl border border-border bg-card p-3.5">
+					<button
+						type="button"
+						onClick={() => setSleepOpen(true)}
+						className="rounded-2xl border border-border bg-card p-3.5 text-left active:scale-[0.99]"
+					>
+						<div className="flex items-center justify-between text-[11px] tracking-wide text-muted-foreground uppercase">
+							<span className="flex items-center gap-1.5">
+								<FiMoon size={12} />
+								Sleep
+							</span>
+							<FiPlus size={13} />
+						</div>
+						<div className="mt-1 text-xl font-semibold">
+							{metric?.sleepHours ? `${metric.sleepHours} h` : "—"}
+						</div>
+						<div className="mt-0.5 text-xs text-muted-foreground">
+							target {sleepTargetHours} h
+						</div>
+					</button>
+				</div>
+
+				<div className="mt-2 rounded-2xl border border-border bg-card p-3.5">
+					<div className="flex items-center justify-between gap-2">
 						<div className="flex items-center gap-1.5 text-[11px] tracking-wide text-muted-foreground uppercase">
 							<FiDroplet size={12} />
 							Water
 						</div>
-						<div className="mt-1 text-xl font-semibold">
-							{(waterMl / 1000).toFixed(2).replace(/\.00$/, "")} L
+						<div className="text-sm tabular-nums">
+							<span className="font-semibold">{litres(waterMl)}</span>
+							<span className="text-muted-foreground"> / {litres(waterTargetMl)} L</span>
 						</div>
-						<div className="mt-2 flex gap-1.5">
-							<button
-								type="button"
-								onClick={() => addWater(-GLASS_ML)}
-								disabled={waterMl === 0}
-								aria-label="Remove a glass of water"
-								className="h-8 flex-1 rounded-lg border border-border text-sm active:scale-95 disabled:opacity-40"
-							>
-								−
-							</button>
-							<button
-								type="button"
-								onClick={() => addWater(GLASS_ML)}
-								aria-label="Add a glass of water"
-								className="h-8 flex-1 rounded-lg border border-border text-sm active:scale-95"
-							>
-								+
-							</button>
-						</div>
+					</div>
+
+					<div
+						className="mt-2 h-2 overflow-hidden rounded-full bg-secondary"
+						role="progressbar"
+						aria-valuenow={waterMl}
+						aria-valuemin={0}
+						aria-valuemax={waterTargetMl}
+						aria-label="Water against target"
+					>
+						<div
+							className="h-full rounded-full transition-[width]"
+							style={{
+								width: `${Math.min(100, waterTargetMl > 0 ? (waterMl / waterTargetMl) * 100 : 0)}%`,
+								backgroundColor: "var(--viz-1)",
+							}}
+						/>
+					</div>
+
+					<div className="mt-2.5 flex gap-1.5">
+						<button
+							type="button"
+							onClick={() => addWater(-GLASS_ML)}
+							disabled={waterMl === 0}
+							aria-label="Remove a glass of water"
+							className="h-9 flex-1 rounded-lg border border-border text-sm active:scale-95 disabled:opacity-40"
+						>
+							−
+						</button>
+						<button
+							type="button"
+							onClick={() => addWater(GLASS_ML)}
+							aria-label="Add a glass of water"
+							className="h-9 flex-1 rounded-lg border border-border text-sm active:scale-95"
+						>
+							+
+						</button>
 					</div>
 				</div>
 			</section>
@@ -303,15 +339,50 @@ export const TodayTab = ({ date, onNavigate }: TabProps) => {
 				Log what you ate
 			</GhostButton>
 
-			<WeightSheet
+			<MetricSheet
 				open={weightOpen}
 				onClose={() => setWeightOpen(false)}
 				date={date}
-				current={metric?.weightKg ?? metrics.data?.lastWeight?.weightKg ?? null}
 				metricsKey={metricsKey}
+				title="Log weight"
+				label="Weight (kg)"
+				hint="Same time of day gives the cleanest trend"
+				unit="kg"
+				field="weightKg"
+				step="0.1"
+				placeholder="72.5"
+				current={weightKg}
+				subtitle={weightKg ? `Last recorded ${weightKg} kg` : "Your first weigh-in"}
+			/>
+
+			<MetricSheet
+				open={sleepOpen}
+				onClose={() => setSleepOpen(false)}
+				date={date}
+				metricsKey={metricsKey}
+				title="Log sleep"
+				label="Sleep (hours)"
+				hint={`You're aiming for ${sleepTargetHours} h a night`}
+				unit="h"
+				field="sleepHours"
+				step="0.25"
+				placeholder={String(sleepTargetHours)}
+				current={metric?.sleepHours ?? null}
+				subtitle={
+					metric?.sleepHours ? `Currently ${metric.sleepHours} h` : "How long did you sleep?"
+				}
 			/>
 		</div>
 	);
+};
+
+/** Litres, trimmed: 2 L rather than 2.00 L, 1.75 L rather than 1.8 L. */
+const litres = (ml: number) => (ml / 1000).toFixed(2).replace(/\.?0+$/, "");
+
+const gapToGoal = (current: number, goal: number): string => {
+	const delta = Math.round((current - goal) * 10) / 10;
+	if (delta === 0) return "at your goal";
+	return `${Math.abs(delta)} kg to ${delta > 0 ? "lose" : "gain"}`;
 };
 
 const greeting = () => {
@@ -322,34 +393,55 @@ const greeting = () => {
 	return "Good evening";
 };
 
-const WeightSheet = ({
+/**
+ * One numeric field written onto the day's metric row — weight or sleep. Both
+ * behave identically, so they share a sheet rather than duplicating one.
+ */
+const MetricSheet = ({
 	open,
 	onClose,
 	date,
-	current,
 	metricsKey,
+	title,
+	subtitle,
+	label,
+	hint,
+	unit,
+	field,
+	step,
+	placeholder,
+	current,
 }: {
 	open: boolean;
 	onClose: () => void;
 	date: string;
-	current: number | null;
 	metricsKey: string;
+	title: string;
+	subtitle: string;
+	label: string;
+	hint: string;
+	unit: string;
+	field: "weightKg" | "sleepHours";
+	step: string;
+	placeholder: string;
+	current: number | null;
 }) => {
 	const [value, setValue] = useState("");
 	const { pending, run } = useAction();
 
 	const save = async () => {
 		if (!value.trim() || Number(value) <= 0) {
-			toast.error("Enter a weight in kg");
+			toast.error(`Enter a value in ${unit}`);
 			return;
 		}
 		const result = await run(
-			() => api.put("/api/metrics", { date, weightKg: Number(value) }),
+			() => api.put("/api/metrics", { date, [field]: Number(value) }),
 			(message) => toast.error(message),
 		);
 		if (!result) return;
-		await refreshAll(metricsKey, "/api/insights");
-		toast.success("Weight logged");
+		// Bootstrap too: a weigh-in moves the profile's current-weight snapshot.
+		await refreshAll(metricsKey, "/api/insights", "/api/bootstrap");
+		toast.success(`${title.replace("Log ", "")} logged`);
 		setValue("");
 		onClose();
 	};
@@ -358,8 +450,8 @@ const WeightSheet = ({
 		<Sheet
 			open={open}
 			onClose={onClose}
-			title="Log weight"
-			subtitle={current ? `Last recorded ${current} kg` : "Your first weigh-in"}
+			title={title}
+			subtitle={subtitle}
 			footer={
 				<PrimaryButton onClick={save} disabled={pending}>
 					{pending ? "Saving…" : "Save"}
@@ -367,15 +459,15 @@ const WeightSheet = ({
 			}
 		>
 			<div className="pb-2">
-				<Labelled label="Weight (kg)" hint="Same time of day gives the cleanest trend">
+				<Labelled label={label} hint={hint}>
 					<TextInput
 						type="number"
 						inputMode="decimal"
-						step="0.1"
+						step={step}
 						min={0}
 						value={value}
 						onChange={(e) => setValue(e.target.value)}
-						placeholder={current ? String(current) : "72.5"}
+						placeholder={current ? String(current) : placeholder}
 						autoFocus
 					/>
 				</Labelled>

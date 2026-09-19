@@ -29,6 +29,8 @@ const tickInterval = (count: number) => Math.max(0, Math.ceil(count / 6) - 1);
 
 const kcal = (n: number) => `${Math.round(n).toLocaleString()} kcal`;
 
+const signed = (n: number) => `${n > 0 ? "+" : ""}${Math.round(n).toLocaleString()} kcal`;
+
 /** Recharts hands the tooltip a loosely-typed payload; narrow it once, here. */
 type TooltipContentProps = { active?: boolean; payload?: { payload?: unknown }[] };
 
@@ -44,6 +46,7 @@ export const CaloriesChart = ({ series, target }: { series: InsightDay[]; target
 		legend={[
 			{ label: "At or under target", color: "var(--viz-1)" },
 			{ label: "Over target", color: "var(--critical)" },
+			{ label: `Target ${target.toLocaleString()} kcal`, color: "var(--critical)", line: true },
 		]}
 		table={{
 			columns: ["Date", "Calories", "vs target"],
@@ -53,7 +56,7 @@ export const CaloriesChart = ({ series, target }: { series: InsightDay[]; target
 		}}
 	>
 		<ResponsiveContainer width="100%" height={200}>
-			<BarChart data={series} margin={{ top: 8, right: 4, bottom: 0, left: -18 }}>
+			<BarChart data={series} margin={{ top: 8, right: 4, bottom: 0, left: 0 }}>
 				<CartesianGrid vertical={false} stroke={GRID_STROKE} />
 				<XAxis
 					dataKey="date"
@@ -63,7 +66,13 @@ export const CaloriesChart = ({ series, target }: { series: InsightDay[]; target
 					axisLine={false}
 					interval={tickInterval(series.length)}
 				/>
-				<YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} width={44} />
+				<YAxis
+					tick={AXIS_TICK}
+					tickLine={false}
+					axisLine={false}
+					width={40}
+					tickFormatter={(v: number) => (v >= 1000 ? `${v / 1000}k` : String(v))}
+				/>
 				<Tooltip
 					cursor={{ fill: "var(--secondary)" }}
 					content={(props: TooltipContentProps) => {
@@ -73,19 +82,19 @@ export const CaloriesChart = ({ series, target }: { series: InsightDay[]; target
 							<TooltipCard
 								title={shortDate(day.date)}
 								rows={[
-									{ label: "Calories", value: kcal(day.calories), color: "var(--viz-1)" },
+									{
+										label: "Calories",
+										value: kcal(day.calories),
+										color: day.calories > target ? "var(--critical)" : "var(--viz-1)",
+									},
+									{ label: "Target", value: kcal(target), color: "var(--critical)" },
+									{ label: "vs target", value: signed(day.calories - target) },
 									{ label: "Protein", value: `${day.proteinG} g` },
 									{ label: "Items", value: `${day.meals}` },
 								]}
 							/>
 						);
 					}}
-				/>
-				<ReferenceLine
-					y={target}
-					stroke="var(--viz-axis)"
-					strokeWidth={1}
-					label={{ value: "target", position: "insideTopRight", fontSize: 10, fill: "var(--viz-axis)" }}
 				/>
 				<Bar dataKey="calories" radius={[4, 4, 0, 0]} maxBarSize={22}>
 					{series.map((d) => (
@@ -95,6 +104,17 @@ export const CaloriesChart = ({ series, target }: { series: InsightDay[]; target
 						/>
 					))}
 				</Bar>
+				{/* Declared after <Bar> so the target line draws on top of the bars it
+				    cuts through, and dashed so it never reads as a plotted series. The
+				    legend above carries its value — an inline label would land on a red
+				    bar on exactly the days that matter most. */}
+				<ReferenceLine
+					y={target}
+					stroke="var(--critical)"
+					strokeWidth={2}
+					strokeDasharray="5 4"
+					ifOverflow="extendDomain"
+				/>
 			</BarChart>
 		</ResponsiveContainer>
 	</ChartFrame>
@@ -175,11 +195,27 @@ export const WeightChart = ({
 	goalWeightKg: number | null;
 }) => {
 	const points = series.filter((d) => d.weightKg !== null);
+	const latest = points[points.length - 1]?.weightKg ?? null;
+
+	const caption =
+		latest === null
+			? "Log a weight from the Today tab"
+			: goalWeightKg === null
+				? `Now ${latest} kg — set a goal weight in Profile`
+				: `Now ${latest} kg · goal ${goalWeightKg} kg · ${toGo(latest, goalWeightKg)}`;
 
 	return (
 		<ChartFrame
 			title="Weight"
-			caption={goalWeightKg ? `Goal ${goalWeightKg} kg` : "Log a weight from the Today tab"}
+			caption={caption}
+			legend={
+				goalWeightKg
+					? [
+							{ label: "Weight", color: "var(--viz-3)" },
+							{ label: `Goal ${goalWeightKg} kg`, color: "var(--good)", line: true },
+						]
+					: undefined
+			}
 			table={{
 				columns: ["Date", "Weight (kg)"],
 				rows: points.map((d) => [shortDate(d.date), d.weightKg ?? ""]),
@@ -206,7 +242,13 @@ export const WeightChart = ({
 							tickLine={false}
 							axisLine={false}
 							width={40}
-							domain={["dataMin - 1", "dataMax + 1"]}
+							// The goal has to be folded into the domain here: an explicit
+							// domain wins over the reference line's own ifOverflow, so a
+							// goal outside the logged range would otherwise never be drawn.
+							domain={[
+								(min: number) => Math.floor(Math.min(min, goalWeightKg ?? min) - 1),
+								(max: number) => Math.ceil(Math.max(max, goalWeightKg ?? max) + 1),
+							]}
 						/>
 						<Tooltip
 							cursor={{ stroke: "var(--viz-axis)", strokeWidth: 1 }}
@@ -221,12 +263,22 @@ export const WeightChart = ({
 								);
 							}}
 						/>
-						{goalWeightKg && (
+						{goalWeightKg !== null && (
+							// extendDomain keeps the goal on screen even when it is far from
+							// the weights actually logged — otherwise the line vanishes.
 							<ReferenceLine
 								y={goalWeightKg}
-								stroke="var(--viz-axis)"
-								strokeWidth={1}
-								label={{ value: "goal", position: "insideTopRight", fontSize: 10, fill: "var(--viz-axis)" }}
+								stroke="var(--good)"
+								strokeWidth={2}
+								strokeDasharray="5 4"
+								ifOverflow="extendDomain"
+								label={{
+									value: `Goal ${goalWeightKg}`,
+									position: "insideTopRight",
+									fontSize: 10,
+									fontWeight: 600,
+									fill: "var(--good)",
+								}}
 							/>
 						)}
 						<Line
@@ -243,6 +295,12 @@ export const WeightChart = ({
 			)}
 		</ChartFrame>
 	);
+};
+
+const toGo = (current: number, goal: number): string => {
+	const delta = Math.round((current - goal) * 10) / 10;
+	if (delta === 0) return "at goal";
+	return `${Math.abs(delta)} kg to ${delta > 0 ? "lose" : "gain"}`;
 };
 
 /* ---------- Macros ---------- */

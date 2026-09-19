@@ -34,7 +34,16 @@ export const GET = withUser(async (user, req) => {
 	const [profile, meals, sets, careLogs, careSteps, metrics] = await Promise.all([
 		prisma.user.findUnique({
 			where: { id: user.id },
-			select: { calorieTarget: true, proteinTarget: true, goalWeightKg: true },
+			select: {
+				calorieTarget: true,
+				proteinTarget: true,
+				waterTargetMl: true,
+				sleepTargetHours: true,
+				heightCm: true,
+				currentWeightKg: true,
+				startWeightKg: true,
+				goalWeightKg: true,
+			},
 		}),
 		prisma.mealEntry.findMany({
 			where: { userId: user.id, date: range },
@@ -161,6 +170,13 @@ export const GET = withUser(async (user, req) => {
 		days,
 		calorieTarget,
 		proteinTarget,
+		waterTargetMl: profile?.waterTargetMl ?? 2500,
+		sleepTargetHours: profile?.sleepTargetHours ?? 8,
+		heightCm: profile?.heightCm ?? null,
+		// Lifetime figures from the profile. `summary.startWeightKg` and
+		// `summary.currentWeightKg` are the ends of the selected range instead.
+		currentWeightKg: profile?.currentWeightKg ?? null,
+		startWeightKg: profile?.startWeightKg ?? null,
 		goalWeightKg: profile?.goalWeightKg ?? null,
 		series,
 		deficitSeries,

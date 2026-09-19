@@ -4,7 +4,8 @@ import { useState } from "react";
 import { FiList } from "react-icons/fi";
 import { cn } from "@/lib/utils";
 
-export type LegendItem = { label: string; color: string };
+/** `line: true` draws a dashed rule instead of a swatch, for reference lines. */
+export type LegendItem = { label: string; color: string; line?: boolean };
 
 type Props = {
 	title: string;
@@ -48,11 +49,19 @@ export const ChartFrame = ({ title, caption, legend, table, children }: Props) =
 				<ul className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
 					{legend.map((item) => (
 						<li key={item.label} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-							<span
-								aria-hidden="true"
-								className="size-2.5 rounded-[3px]"
-								style={{ backgroundColor: item.color }}
-							/>
+							{item.line ? (
+								<span
+									aria-hidden="true"
+									className="h-0 w-4 border-t-2 border-dashed"
+									style={{ borderColor: item.color }}
+								/>
+							) : (
+								<span
+									aria-hidden="true"
+									className="size-2.5 rounded-[3px]"
+									style={{ backgroundColor: item.color }}
+								/>
+							)}
 							{item.label}
 						</li>
 					))}
