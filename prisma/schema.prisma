@@ -35,6 +35,7 @@ model User {
   proteinTarget    Int   @default(120)
   carbsTargetG     Int   @default(220)
   fatTargetG       Int   @default(60)
+  fiberTargetG     Int   @default(9)
   waterTargetMl    Int   @default(2500)
   sleepTargetHours Float @default(8)
 
@@ -199,6 +200,7 @@ model LibraryItem {
   proteinG     Float   @default(0)
   carbsG       Float   @default(0)
   fatG         Float   @default(0)
+  fiberG       Float   @default(0)
   category     String  @default("Other") // Breakfast, Lunch, Dinner, Snack, Drink, Protein, Other
   favorite     Boolean @default(false)
 
@@ -231,6 +233,7 @@ model MealEntry {
   proteinG Float @default(0)
   carbsG   Float @default(0)
   fatG     Float @default(0)
+  fiberG   Float @default(0)
 
   createdAt DateTime @default(now())
 

@@ -9,6 +9,7 @@ export type Profile = {
 	proteinTarget: number;
 	carbsTargetG: number;
 	fatTargetG: number;
+	fiberTargetG: number;
 	waterTargetMl: number;
 	sleepTargetHours: number;
 	heightCm: number | null;
@@ -73,6 +74,7 @@ export type LibraryItem = {
 	proteinG: number;
 	carbsG: number;
 	fatG: number;
+	fiberG: number;
 	favorite: boolean;
 };
 
@@ -90,6 +92,7 @@ export type MealEntry = {
 	proteinG: number;
 	carbsG: number;
 	fatG: number;
+	fiberG: number;
 	createdAt: string;
 };
 
@@ -136,6 +139,7 @@ export type InsightDay = {
 	proteinG: number;
 	carbsG: number;
 	fatG: number;
+	fiberG: number;
 	meals: number;
 	sets: number;
 	volumeKg: number;
@@ -150,6 +154,7 @@ export type Insights = {
 	proteinTarget: number;
 	carbsTargetG: number;
 	fatTargetG: number;
+	fiberTargetG: number;
 	waterTargetMl: number;
 	sleepTargetHours: number;
 	heightCm: number | null;

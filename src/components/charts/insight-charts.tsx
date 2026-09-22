@@ -311,6 +311,10 @@ const MACROS = [
 	{ key: "fatG", label: "Fat", color: "var(--viz-3)" },
 ] as const;
 
+// Fiber is part of the carbs figure, so it is listed alongside the macros but
+// never stacked as a fourth bar — that would count those grams twice.
+const MACRO_DETAIL = [...MACROS, { key: "fiberG", label: "Fiber", color: "var(--viz-4)" }] as const;
+
 export const MacroChart = ({ series }: { series: InsightDay[] }) => {
 	const recent = series.slice(-14);
 
@@ -320,10 +324,10 @@ export const MacroChart = ({ series }: { series: InsightDay[] }) => {
 			caption="Grams per day, last 14 days"
 			legend={MACROS.map((m) => ({ label: m.label, color: m.color }))}
 			table={{
-				columns: ["Date", "Protein", "Carbs", "Fat"],
+				columns: ["Date", "Protein", "Carbs", "Fat", "Fiber"],
 				rows: recent
 					.filter((d) => d.meals > 0)
-					.map((d) => [shortDate(d.date), d.proteinG, d.carbsG, d.fatG]),
+					.map((d) => [shortDate(d.date), d.proteinG, d.carbsG, d.fatG, d.fiberG]),
 			}}
 		>
 			<ResponsiveContainer width="100%" height={190}>
@@ -346,7 +350,7 @@ export const MacroChart = ({ series }: { series: InsightDay[] }) => {
 							return (
 								<TooltipCard
 									title={shortDate(day.date)}
-									rows={MACROS.map((m) => ({
+									rows={MACRO_DETAIL.map((m) => ({
 										label: m.label,
 										value: `${day[m.key]} g`,
 										color: m.color,

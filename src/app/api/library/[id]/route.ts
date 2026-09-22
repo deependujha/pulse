@@ -24,6 +24,7 @@ export const PATCH = withUser<Ctx>(async (user, req, ctx) => {
 			proteinG: "proteinG" in body ? Math.max(0, num(body.proteinG, owned.proteinG)) : undefined,
 			carbsG: "carbsG" in body ? Math.max(0, num(body.carbsG, owned.carbsG)) : undefined,
 			fatG: "fatG" in body ? Math.max(0, num(body.fatG, owned.fatG)) : undefined,
+			fiberG: "fiberG" in body ? Math.max(0, num(body.fiberG, owned.fiberG)) : undefined,
 			favorite: "favorite" in body ? bool(body.favorite, owned.favorite) : undefined,
 		},
 	});

@@ -19,6 +19,7 @@ const blank = {
 	proteinG: "",
 	carbsG: "",
 	fatG: "",
+	fiberG: "",
 	favorite: false,
 };
 
@@ -50,6 +51,7 @@ const ItemForm = ({ open, onClose, item, preset }: Props) => {
 					proteinG: String(item.proteinG),
 					carbsG: String(item.carbsG),
 					fatG: String(item.fatG),
+					fiberG: String(item.fiberG),
 					favorite: item.favorite,
 				}
 			: { ...blank, ...preset },
@@ -83,6 +85,7 @@ const ItemForm = ({ open, onClose, item, preset }: Props) => {
 			proteinG: Number(form.proteinG) || 0,
 			carbsG: Number(form.carbsG) || 0,
 			fatG: Number(form.fatG) || 0,
+			fiberG: Number(form.fiberG) || 0,
 			favorite: form.favorite,
 		};
 
@@ -183,7 +186,7 @@ const ItemForm = ({ open, onClose, item, preset }: Props) => {
 				</Labelled>
 
 				<div>
-					<div className="grid grid-cols-3 gap-2">
+					<div className="grid grid-cols-2 gap-2">
 						<Labelled label="Protein (g)">
 							<TextInput
 								type="number"
@@ -211,6 +214,16 @@ const ItemForm = ({ open, onClose, item, preset }: Props) => {
 								min={0}
 								value={form.fatG}
 								onChange={(e) => set("fatG", e.target.value)}
+								placeholder="0"
+							/>
+						</Labelled>
+						<Labelled label="Fiber (g)">
+							<TextInput
+								type="number"
+								inputMode="decimal"
+								min={0}
+								value={form.fiberG}
+								onChange={(e) => set("fiberG", e.target.value)}
 								placeholder="0"
 							/>
 						</Labelled>

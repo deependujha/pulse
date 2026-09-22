@@ -112,7 +112,7 @@ export const LibraryManager = ({ open, onClose, library }: Props) => {
 											</div>
 											<div className="truncate text-xs text-muted-foreground">
 												{item.calories} kcal · {item.servingLabel} · {item.proteinG}p{" "}
-												{item.carbsG}c {item.fatG}f
+												{item.carbsG}c {item.fatG}f {item.fiberG}fib
 											</div>
 										</div>
 										<button

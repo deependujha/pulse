@@ -27,6 +27,7 @@ export const POST = withUser(async (user, req) => {
 		proteinG: Math.max(0, num(body.proteinG, 0)),
 		carbsG: Math.max(0, num(body.carbsG, 0)),
 		fatG: Math.max(0, num(body.fatG, 0)),
+		fiberG: Math.max(0, num(body.fiberG, 0)),
 		favorite: bool(body.favorite),
 		archived: false,
 	};

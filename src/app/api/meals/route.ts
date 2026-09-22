@@ -39,6 +39,7 @@ export const POST = withUser(async (user, req) => {
 		proteinG: number;
 		carbsG: number;
 		fatG: number;
+		fiberG: number;
 	};
 
 	if (itemId) {
@@ -51,6 +52,7 @@ export const POST = withUser(async (user, req) => {
 			proteinG: round1(item.proteinG * servings),
 			carbsG: round1(item.carbsG * servings),
 			fatG: round1(item.fatG * servings),
+			fiberG: round1(item.fiberG * servings),
 		};
 	} else {
 		const name = str(body.name);
@@ -64,6 +66,7 @@ export const POST = withUser(async (user, req) => {
 			proteinG: round1(Math.max(0, num(body.proteinG, 0)) * servings),
 			carbsG: round1(Math.max(0, num(body.carbsG, 0)) * servings),
 			fatG: round1(Math.max(0, num(body.fatG, 0)) * servings),
+			fiberG: round1(Math.max(0, num(body.fiberG, 0)) * servings),
 		};
 	}
 
@@ -90,6 +93,7 @@ export const POST = withUser(async (user, req) => {
 					proteinG: Math.max(0, num(body.proteinG, 0)),
 					carbsG: Math.max(0, num(body.carbsG, 0)),
 					fatG: Math.max(0, num(body.fatG, 0)),
+					fiberG: Math.max(0, num(body.fiberG, 0)),
 				},
 			});
 		}

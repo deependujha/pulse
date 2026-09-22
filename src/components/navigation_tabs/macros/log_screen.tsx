@@ -45,6 +45,7 @@ export const LogScreen = ({ open, onClose, date, library, defaultMeal, onLogged 
 		proteinG: "",
 		carbsG: "",
 		fatG: "",
+		fiberG: "",
 		save: false,
 	});
 
@@ -63,7 +64,7 @@ export const LogScreen = ({ open, onClose, date, library, defaultMeal, onLogged 
 		setOpenId(null);
 		setServings(1);
 		setQuery("");
-		setCustom({ name: "", calories: "", proteinG: "", carbsG: "", fatG: "", save: false });
+		setCustom({ name: "", calories: "", proteinG: "", carbsG: "", fatG: "", fiberG: "", save: false });
 	};
 
 	const logItem = async (item: LibraryItem, count: number) => {
@@ -98,6 +99,7 @@ export const LogScreen = ({ open, onClose, date, library, defaultMeal, onLogged 
 					proteinG: Number(custom.proteinG) || 0,
 					carbsG: Number(custom.carbsG) || 0,
 					fatG: Number(custom.fatG) || 0,
+					fiberG: Number(custom.fiberG) || 0,
 					servings: 1,
 					saveToLibrary: custom.save,
 				}),
@@ -333,7 +335,7 @@ export const LogScreen = ({ open, onClose, date, library, defaultMeal, onLogged 
 							/>
 						</Labelled>
 
-						<div className="grid grid-cols-3 gap-2">
+						<div className="grid grid-cols-2 gap-2">
 							<Labelled label="Protein (g)">
 								<TextInput
 									type="number"
@@ -361,6 +363,16 @@ export const LogScreen = ({ open, onClose, date, library, defaultMeal, onLogged 
 									min={0}
 									value={custom.fatG}
 									onChange={(e) => setCustom((p) => ({ ...p, fatG: e.target.value }))}
+									placeholder="0"
+								/>
+							</Labelled>
+							<Labelled label="Fiber (g)">
+								<TextInput
+									type="number"
+									inputMode="decimal"
+									min={0}
+									value={custom.fiberG}
+									onChange={(e) => setCustom((p) => ({ ...p, fiberG: e.target.value }))}
 									placeholder="0"
 								/>
 							</Labelled>

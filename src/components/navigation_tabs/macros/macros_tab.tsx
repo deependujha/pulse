@@ -40,6 +40,7 @@ export const MacrosTab = ({ date, onDateChange }: TabProps) => {
 	const proteinTarget = profile?.proteinTarget ?? 120;
 	const carbsTarget = profile?.carbsTargetG ?? 220;
 	const fatTarget = profile?.fatTargetG ?? 60;
+	const fiberTarget = profile?.fiberTargetG ?? 9;
 	const waterTarget = profile?.waterTargetMl ?? 2500;
 
 	const totals = useMemo(
@@ -50,8 +51,9 @@ export const MacrosTab = ({ date, onDateChange }: TabProps) => {
 					proteinG: acc.proteinG + entry.proteinG,
 					carbsG: acc.carbsG + entry.carbsG,
 					fatG: acc.fatG + entry.fatG,
+					fiberG: acc.fiberG + entry.fiberG,
 				}),
-				{ calories: 0, proteinG: 0, carbsG: 0, fatG: 0 },
+				{ calories: 0, proteinG: 0, carbsG: 0, fatG: 0, fiberG: 0 },
 			),
 		[entries],
 	);
@@ -98,7 +100,7 @@ export const MacrosTab = ({ date, onDateChange }: TabProps) => {
 							/>
 						</div>
 
-						<div className="mt-4 grid grid-cols-3 gap-2">
+						<div className="mt-4 grid grid-cols-2 gap-2">
 							<MacroBar
 								label="Protein"
 								value={totals.proteinG}
@@ -116,6 +118,12 @@ export const MacrosTab = ({ date, onDateChange }: TabProps) => {
 								value={totals.fatG}
 								target={fatTarget}
 								color="var(--viz-3)"
+							/>
+							<MacroBar
+								label="Fiber"
+								value={totals.fiberG}
+								target={fiberTarget}
+								color="var(--viz-4)"
 							/>
 						</div>
 					</section>
@@ -184,7 +192,7 @@ export const MacrosTab = ({ date, onDateChange }: TabProps) => {
 														<span className="block text-xs text-muted-foreground">
 															{entry.servings !== 1 && `${entry.servings} servings · `}
 															{Math.round(entry.proteinG)}p · {Math.round(entry.carbsG)}c ·{" "}
-															{Math.round(entry.fatG)}f
+															{Math.round(entry.fatG)}f · {Math.round(entry.fiberG)}fib
 														</span>
 													</span>
 													<span className="shrink-0 text-sm tabular-nums">{entry.calories}</span>

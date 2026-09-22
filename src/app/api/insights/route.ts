@@ -10,6 +10,7 @@ export type InsightDay = {
 	proteinG: number;
 	carbsG: number;
 	fatG: number;
+	fiberG: number;
 	meals: number;
 	sets: number;
 	volumeKg: number;
@@ -39,6 +40,7 @@ export const GET = withUser(async (user, req) => {
 				proteinTarget: true,
 				carbsTargetG: true,
 				fatTargetG: true,
+				fiberTargetG: true,
 				waterTargetMl: true,
 				sleepTargetHours: true,
 				heightCm: true,
@@ -49,7 +51,15 @@ export const GET = withUser(async (user, req) => {
 		}),
 		prisma.mealEntry.findMany({
 			where: { userId: user.id, date: range },
-			select: { date: true, calories: true, proteinG: true, carbsG: true, fatG: true, name: true },
+			select: {
+				date: true,
+				calories: true,
+				proteinG: true,
+				carbsG: true,
+				fatG: true,
+				fiberG: true,
+				name: true,
+			},
 		}),
 		prisma.setLog.findMany({
 			where: { userId: user.id, date: range },
@@ -78,6 +88,7 @@ export const GET = withUser(async (user, req) => {
 		proteinG: 0,
 		carbsG: 0,
 		fatG: 0,
+		fiberG: 0,
 		meals: 0,
 		sets: 0,
 		volumeKg: 0,
@@ -95,6 +106,7 @@ export const GET = withUser(async (user, req) => {
 		day.proteinG += m.proteinG;
 		day.carbsG += m.carbsG;
 		day.fatG += m.fatG;
+		day.fiberG += m.fiberG;
 		day.meals += 1;
 	}
 
@@ -128,6 +140,7 @@ export const GET = withUser(async (user, req) => {
 		proteinG: round1(d.proteinG),
 		carbsG: round1(d.carbsG),
 		fatG: round1(d.fatG),
+		fiberG: round1(d.fiberG),
 		volumeKg: Math.round(d.volumeKg),
 	}));
 
@@ -174,6 +187,7 @@ export const GET = withUser(async (user, req) => {
 		proteinTarget,
 		carbsTargetG: profile?.carbsTargetG ?? 220,
 		fatTargetG: profile?.fatTargetG ?? 60,
+		fiberTargetG: profile?.fiberTargetG ?? 9,
 		waterTargetMl: profile?.waterTargetMl ?? 2500,
 		sleepTargetHours: profile?.sleepTargetHours ?? 8,
 		heightCm: profile?.heightCm ?? null,

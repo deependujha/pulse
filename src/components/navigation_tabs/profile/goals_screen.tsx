@@ -25,6 +25,7 @@ const GoalsForm = ({ open, onClose, profile }: Props) => {
 		proteinTarget: String(profile.proteinTarget),
 		carbsTargetG: String(profile.carbsTargetG),
 		fatTargetG: String(profile.fatTargetG),
+		fiberTargetG: String(profile.fiberTargetG),
 		waterTargetMl: String(profile.waterTargetMl),
 		sleepTargetHours: String(profile.sleepTargetHours),
 		heightCm: profile.heightCm ? String(profile.heightCm) : "",
@@ -57,6 +58,7 @@ const GoalsForm = ({ open, onClose, profile }: Props) => {
 					proteinTarget: Number(form.proteinTarget) || 0,
 					carbsTargetG: Number(form.carbsTargetG) || 0,
 					fatTargetG: Number(form.fatTargetG) || 0,
+					fiberTargetG: Number(form.fiberTargetG) || 0,
 					waterTargetMl: Number(form.waterTargetMl) || 0,
 					sleepTargetHours: Number(form.sleepTargetHours) || 0,
 					heightCm: form.heightCm.trim(),
@@ -126,6 +128,15 @@ const GoalsForm = ({ open, onClose, profile }: Props) => {
 								value={form.fatTargetG}
 								onChange={set("fatTargetG")}
 								placeholder="60"
+							/>
+						</Labelled>
+						<Labelled label="Fiber (g)">
+							<TextInput
+								type="number"
+								inputMode="numeric"
+								value={form.fiberTargetG}
+								onChange={set("fiberTargetG")}
+								placeholder="9"
 							/>
 						</Labelled>
 						<Labelled label="Water (ml)">
